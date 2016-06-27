@@ -1,0 +1,72 @@
+/**
+    This file is part of cpp-restify.
+
+    Copyright(C) 2016 Christoph Heindl
+    All rights reserved.
+
+    This software may be modified and distributed under the terms
+    of MIT license. See the LICENSE file for details.
+*/
+
+#ifndef CPP_RESTIFY_REQUEST_H
+#define CPP_RESTIFY_REQUEST_H
+
+#include <restify/interface.h>
+#include <restify/non_copyable.h>
+#include <json/json-forwards.h>
+#include <memory>
+
+namespace restify {
+
+    class CPPRESTIFY_INTERFACE Request : NonCopyable 
+    {
+    public:
+
+        Request();
+        ~Request();
+
+        /** Return the HTTP method. */
+        std::string method() const;
+
+        /** Set the HTTP method. */
+        Request &method(const std::string &method);
+
+        /** Return the URI decoded path.*/
+        std::string path() const;
+
+        /** Set the URI decoded path. */
+        Request &path(const std::string &path);
+
+        /** Return immutable reference to query parameters. */
+        const Json::Value &params() const;
+
+        /** Return immutable reference to a specific query parameter. */
+        const Json::Value &param(const std::string &key) const;
+
+        /** Return immutable reference to a specific query parameter. */
+        const Json::Value param(const std::string &key, const Json::Value &defaultValue) const;
+
+        /** Return mutable reference to query parameters. */
+        Json::Value &params();
+
+        /** Return immutable reference to HTTP headers.*/
+        const Json::Value &headers() const;
+
+        /** Return mutable reference to HTTP headers. */
+        Json::Value &headers();
+
+        /** Return immutable reference to a specific header. */
+        const Json::Value &header(const std::string &key) const;
+
+        /** Return immutable reference to a specific header. */
+        const Json::Value header(const std::string &key, const Json::Value &defaultValue) const;
+
+
+    private:
+        struct PrivateData;
+        CPPRESTIFY_NO_INTERFACE_WARN(std::unique_ptr<PrivateData>, _data);
+    };
+
+}
+
+#endif
