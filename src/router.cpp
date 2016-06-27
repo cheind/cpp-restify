@@ -84,65 +84,14 @@ namespace restify {
 
             if (values.size() < 1) 
                 return true;
-
-            if (!_cfg["params"].isNull()) {
-                for (auto i = 0; i < values.size() - 1; i++) {
-                    if (!convertValue(_keys[i], values[i + 1], extractedParams))
-                        return false;
-                }
-            } else {
-                for (auto i = 0; i < values.size() - 1; i++) {
-                    extractedParams[_keys[i]] = std::string(values[i + 1]);
-                }
+            
+            for (auto i = 0; i < values.size() - 1; i++) {
+                extractedParams[_keys[i]] = std::string(values[i + 1]);
             }
             
-
             return true;
-
         }
 
-    private:
-
-        bool convertValue(const std::string &key, const std::string &value, Json::Value &target) const
-        {
-            try {
-                const Json::Value keyOpts = _cfg["params"][key];
-                if (keyOpts.isNull()) {
-                    target[key] = value;
-                    return true;
-                }
-
-                const Json::Value &jsontype = keyOpts["type"];
-                if (jsontype.isString()) {
-                    const std::string type = jsontype.asString();
-                    std::size_t next = value.length();
-
-                    if (type == "int") {
-                        target[key] = std::stoi(value, &next);
-                    } else if (type == "float") {
-                        target[key] = std::stof(value, &next);
-                    } else if (type == "double") {
-                        target[key] = std::stod(value, &next);
-                    } else if (type == "boolean") {
-                        target[key] = (value == "yes" || value == "Yes" || value == "YES") ? true : false;
-                    } else {
-                        // Unknown type.
-                        target[key] = value;
-                    }
-
-                    return next == value.length();
-
-                } else {
-                    target[key] = value;
-                    return true;
-                }
-
-                
-
-            } catch (std::invalid_argument &) {
-                return false;
-            }
-        }
 
         Json::Value _cfg;
         RequestHandlerPtr _handler;
@@ -199,27 +148,26 @@ namespace restify {
 
     bool Router::dispatch(Request & req, Response & rep) const
     {
-        // Find first matching route
+        // Loop over routes until the first one handles the request
 
-        Json::Value pathParams(Json::objectValue);
-        auto i = std::find_if(_data->routes.begin(), _data->routes.end(), [&req, &pathParams](const Route &r) {
-            pathParams.clear();
-            return r.match(req, pathParams);
+        auto i = std::find_if(_data->routes.begin(), _data->routes.end(), [&req, &rep](const Route &r) {
+            Json::Value pathParams(Json::objectValue);
+            
+            // Test if request path is compatible with route path template.
+            if (!r.match(req, pathParams))
+                return false;
+            
+            Json::Value &params = req.params();
+            if (!jsonMerge(params, pathParams)) {
+                CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to merge parameters.");
+            }
+            
+            // Invoke handler
+            return r.handle(req, rep);
         });
-
-        // Return when no route found
-        if (i == _data->routes.end()) {
-            return false;
-        }
-
-        // Copy all slug parameters to request object. Note,
-
-        Json::Value &params = req.params();
-        if (!jsonMerge(params, pathParams)) {
-            return false;
-        }        
-        // Invoke handler
-        return i->handle(req, rep);
+        
+        return i != _data->routes.end();
+        
     }
 
 }

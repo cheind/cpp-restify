@@ -13,6 +13,8 @@ of MIT license. See the LICENSE file for details.
 #include <restify/router.h>
 #include <restify/request.h>
 #include <restify/response.h>
+#include <restify/helpers.h>
+#include <restify/error.h>
 #include <json/json.h>
 
 TEST_CASE("router")
@@ -39,8 +41,6 @@ TEST_CASE("router")
     cfg.clear();
     cfg["path"] = "/users/:id/card/:number";
     cfg["methods"] = "GET";
-    cfg["params"]["id"]["type"] = "int";
-    cfg["params"]["number"]["type"] = "int";
     router.addRoute(cfg, [](const restify::Request &req, restify::Response &rep) {
         return true;
     });
@@ -103,12 +103,12 @@ TEST_CASE("router")
             .path("/users/123/card/456");
 
         restify::Response rep;
+        
+        using restify::json_cast;
 
         REQUIRE(router.dispatch(req, rep));
-        REQUIRE(req.param("id").isInt());
-        REQUIRE(req.param("number").isInt());
-        REQUIRE(req.param("id") == 123);
-        REQUIRE(req.param("number") == 456);
+        REQUIRE(json_cast<int>(req.param("id")) == 123);
+        REQUIRE(json_cast<int>(req.param("number")) == 456);
     }
 
     {
@@ -119,19 +119,11 @@ TEST_CASE("router")
             .path("/users/123/card/456dasd");
 
         restify::Response rep;
+        
+        using restify::json_cast;
 
-        REQUIRE(!router.dispatch(req, rep));
-
-        restify::Request req2;
-        req2
-            .method("GET")
-            .path("/users/123/card/dasd456dasd");
-
-        REQUIRE(!router.dispatch(req2, rep));
+        REQUIRE(router.dispatch(req, rep));
+        REQUIRE_THROWS_AS(json_cast<int>(req.param("number")), restify::Error);
     }
-
-    
-
-    
 
 }

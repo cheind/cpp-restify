@@ -38,6 +38,17 @@ TEST_CASE("request")
     REQUIRE(r.headers()["Content-Type"].asString() == "text/plain");
 
     REQUIRE(r.header("NOT-HERE", "ABC") == "ABC");
+}
 
-
+TEST_CASE("request-qeury-string")
+{
+    restify::Request r;
+    
+    r.queryString("a= 3.2&b=hugo&c= true");
+    
+    using restify::json_cast;
+    
+    REQUIRE(json_cast<float>(r.param("a")) == 3.2f);
+    REQUIRE(json_cast<std::string>(r.param("b")) == "hugo");
+    REQUIRE(json_cast<bool>(r.param("c")) == true);
 }

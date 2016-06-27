@@ -36,6 +36,12 @@ namespace restify {
 
         /** Set the URI decoded path. */
         Request &path(const std::string &path);
+        
+        /** Return the URI decoded query string.*/
+        std::string queryString() const;
+        
+        /** Set the URI decoded query string. Note this updates the params() field. */
+        Request &queryString(const std::string &path);
 
         /** Return immutable reference to query parameters. */
         const Json::Value &params() const;

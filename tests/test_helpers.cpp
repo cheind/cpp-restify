@@ -13,7 +13,7 @@ of MIT license. See the LICENSE file for details.
 #include <restify/helpers.h>
 #include <iostream>
 
-TEST_CASE("json-cast")
+TEST_CASE("helpers-json-cast")
 {
     using namespace restify;
     
@@ -35,7 +35,13 @@ TEST_CASE("json-cast")
     REQUIRE_THROWS_AS(json_cast<int>(strNotInt), Error);
     REQUIRE_THROWS_AS(json_cast<float>(strNotInt), Error);
     REQUIRE_THROWS_AS(json_cast<bool>(strNotInt), Error);
+}
 
-
-
+TEST_CASE("helpers-split-string") {
+    
+    
+    REQUIRE(restify::splitString(" a=2& b = 3.1&c = 1;2;3 ", '&', true) ==
+            (std::vector<std::string> {"a=2", "b = 3.1", "c = 1;2;3"}));
+    
+    
 }

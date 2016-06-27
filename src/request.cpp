@@ -9,6 +9,7 @@
 */
 
 #include <restify/request.h>
+#include <restify/helpers.h>
 #include <json/json.h>
 
 namespace restify {
@@ -17,6 +18,7 @@ namespace restify {
     #define HEADERS_KEY "headers"
     #define METHOD_KEY "method"
     #define PATH_KEY "path"
+    #define QUERY_KEY "queryString"
 
     struct Request::PrivateData {
 
@@ -57,6 +59,29 @@ namespace restify {
     Request &Request::path(const std::string & path)
     {
         _data->root[PATH_KEY] = path;
+        return *this;
+    }
+    
+    std::string Request::queryString() const {
+        return _data->root.get(QUERY_KEY, "").asString();
+    }
+    
+    Request &Request::queryString(const std::string &path) {
+        _data->root[QUERY_KEY] = path;
+        
+        // Split string at '&'
+        Json::Value &keyvals = params();
+        std::vector<std::string> pairs = splitString(path, '&', false);
+        for (auto p : pairs) {
+            std::vector<std::string> keyval = splitString(p, '=', true);
+            
+            if (keyval.size() != 2) {
+                CPPRESTIFY_FAIL(StatusCode::BadRequest, "Query string is malformed.");
+            }
+            
+            keyvals[keyval[0]] = keyval[1];
+        }
+        
         return *this;
     }
 

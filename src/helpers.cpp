@@ -29,5 +29,35 @@ namespace restify {
 
         return ok;
     }
+    
+    std::string trimString(const std::string &str, const std::string &ws) {
+        
+        
+        
+        const auto strBegin = str.find_first_not_of(ws);
+        if (strBegin == std::string::npos)
+            return ""; // no content
+        
+        const auto strEnd = str.find_last_not_of(ws);
+        const auto strRange = strEnd - strBegin + 1;
+        
+        return str.substr(strBegin, strRange);
+    }
+    
+    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim) {
+        
+        std::istringstream split(str);
+        
+        std::vector<std::string> tokens;
+        std::string elem;
+        while(std::getline(split, elem, delim)) {
+            
+            if (trim)
+                elem = trimString(elem);
+            
+            tokens.push_back(elem);
+        }
+        return tokens;
+    }
 
 }

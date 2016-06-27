@@ -14,12 +14,21 @@
 #include <restify/interface.h>
 #include <restify/error.h>
 #include <json/json.h>
+#include <vector>
 #include <string>
 
 namespace restify {
 
     CPPRESTIFY_INTERFACE
     bool jsonMerge(Json::Value& a, const Json::Value& b);
+    
+    CPPRESTIFY_INTERFACE
+    std::string trimString(const std::string &str, const std::string &ws = " \t");
+    
+    CPPRESTIFY_INTERFACE
+    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim);
+    
+    
     
     template <typename...>
     struct always_false { static constexpr bool value = false; };
