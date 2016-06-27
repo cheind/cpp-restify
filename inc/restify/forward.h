@@ -13,6 +13,7 @@
 
 //#include <restify/request_handler.h>
 #include <functional>
+#include <string>
 
 namespace restify {
 
@@ -20,8 +21,12 @@ namespace restify {
     class Response;
     class Server;
     class Router;
+    class Error;
+    class HttpRenderer;
 
-    typedef std::function<bool(const Request &req, Response &rep) > RequestHandler;
+    typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;
+    typedef std::function<std::string (const Response &rep)> ResponseRenderer;
+    typedef std::function<std::string (const Error &err)> ErrorRenderer;
 }
 
 #endif

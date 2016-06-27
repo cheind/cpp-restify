@@ -68,7 +68,7 @@ namespace restify {
         const Json::Value header(const std::string &key, const Json::Value &defaultValue) const;
 
         /** Convert request to JSON */
-        const Json::Value toJson() const;
+        const Json::Value &toJson() const;
 
     private:
         struct PrivateData;

@@ -32,12 +32,14 @@ add_library(cpp-restify SHARED
     inc/restify/helpers.h
     inc/restify/codes.h
     inc/restify/error.h
+    inc/restify/http_renderer.h
 	src/server.cpp
     src/request.cpp
     src/response.cpp
     src/router.cpp
     src/helpers.cpp
     src/error.cpp
+    src/http_renderer.cpp
 )
 
 target_link_libraries(cpp-restify mongoose jsoncpp)

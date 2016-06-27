@@ -12,6 +12,7 @@
 #define CPP_RESTIFY_RESPONSE_H
 
 #include <restify/interface.h>
+#include <restify/codes.h>
 #include <restify/non_copyable.h>
 #include <json/json-forwards.h>
 #include <memory>
@@ -23,7 +24,15 @@ namespace restify {
     public:
 
         Response();
-        ~Response();        
+        ~Response();
+        
+        Response &code(int code);
+        Response &body(const Json::Value &value);
+        Response &header(const std::string &key, const Json::Value &value);
+        Response &version(const std::string &value);
+        
+        const Json::Value &toJson() const;
+        
 
     private:
         struct PrivateData;

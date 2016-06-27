@@ -123,7 +123,7 @@ namespace restify {
         return _data->root[HEADERS_KEY].get(key, defaultValue);
     }
     
-    const Json::Value Request::toJson() const {
+    const Json::Value &Request::toJson() const {
         return _data->root;
     }
 
