@@ -12,6 +12,7 @@
 #include <restify/router.h>
 #include <restify/request.h>
 #include <restify/response.h>
+#include <json/json.h>
 #include "mongoose.h"
 
 #include <iostream>
@@ -77,23 +78,30 @@ namespace restify {
 
         Server *server = static_cast<Server*>(info->user_data);
 
+
+        // Setup request object
+        Request request;
+        
+        request
+        .path(info->uri)
+        .method(info->request_method);
+
+        if (info->query_string) {
+            const int bufferSize = 2048;
+            char buffer[bufferSize];
+            
+            mg_url_decode(info->query_string, strlen(info->query_string), buffer, bufferSize, 0);
+            
+            request.queryString(buffer);
+        }
+        
+        Json::Value &headers = request.headers();
+        for (int i = 0; i < info->num_headers; ++i) {
+            headers[info->http_headers[i].name] = info->http_headers[i].value;
+        }
         
 
-        // Setup request and response objects.
-        Request request;
         Response response;
-
-        std::cout << info->uri << std::endl;
-        if (info->query_string) {
-            char buffer[1024];
-            mg_url_decode(info->query_string, strlen(info->query_string), buffer, 1024, 0);
-            std::cout << buffer << std::endl;
-        }
-
-        // https://de.wikipedia.org/wiki/HTTP-Statuscode#4xx_.E2.80.93_Client-Fehler
-            
-        std::cout << "handling message!" << std::endl;
-
         if (!server->handleRequest(request, response)) {
             return 0;
         } else {

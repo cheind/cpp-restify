@@ -45,3 +45,32 @@ TEST_CASE("helpers-split-string") {
     
     
 }
+
+#include <restify/server.h>
+#include <restify/request.h>
+#include <restify/response.h>
+
+TEST_CASE("server") {
+    
+    Json::Value v(Json::nullValue);
+    
+    restify::Server server(v);
+    
+    Json::Value cfg;
+    cfg["path"] = "/users/:id";
+    cfg["methods"].append("GET");
+    cfg["methods"].append("POST");
+    server.route(cfg, [](const restify::Request &req, restify::Response &rep) {
+        
+        std::cout << req.toJson().toStyledString() << std::endl;
+        return true;
+    });
+    
+    server.start();
+    
+    std::cin.get();
+    
+    server.stop();
+    
+    
+}
