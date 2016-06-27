@@ -9,6 +9,8 @@
 */
 
 #include <restify/http_renderer.h>
+#include <restify/response.h>
+#include <restify/error.h>
 #include <json/json.h>
 
 namespace restify {
@@ -20,7 +22,34 @@ namespace restify {
     
     std::string HttpRenderer::renderResponse(const Response &rep) const {
         
-        return "";
+        const Json::Value &jroot = rep.toJson();
+        
+        
+        std::ostringstream http;
+        
+        // Render body first.
+        
+        const Json::Value jbody = jroot.get("body", "");
+        std::string body;
+        
+        switch (jbody.type()) {
+            case Json::stringValue:
+                body = jbody.asString();
+            case Json::objectValue:
+            {
+                Json::FastWriter w;
+                w.omitEndingLineFeed();
+                w.dropNullPlaceholders(); // should do this?
+                body = w.write(jbody);
+            }
+            default:
+                CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to render body.");
+        }
+        
+        const int contentLength = jroot["headers"].get("Content-Length", static_cast<int>(body.length())).asInt();
+        
+        
+        return http.str();
         
     }
     
