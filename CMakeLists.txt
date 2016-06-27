@@ -30,11 +30,14 @@ add_library(cpp-restify SHARED
 	inc/restify/server.h
     inc/restify/router.h
     inc/restify/helpers.h
+    inc/restify/codes.h
+    inc/restify/error.h
 	src/server.cpp
     src/request.cpp
     src/response.cpp
     src/router.cpp
     src/helpers.cpp
+    src/error.cpp
 )
 
 target_link_libraries(cpp-restify mongoose jsoncpp)
@@ -45,6 +48,7 @@ add_executable(cpp-restify-tests
     tests/catch.hpp
     tests/test_request.cpp
     tests/test_router.cpp
+    tests/test_helpers.cpp
 )
 target_link_libraries(cpp-restify-tests cpp-restify jsoncpp)
 

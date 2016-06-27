@@ -13,7 +13,7 @@
 
 namespace restify {
 
-    bool jsonMerge(Json::Value & a, Json::Value & b) {
+    bool jsonMerge(Json::Value & a, const Json::Value & b) {
 
         if (!a.isObject() || !b.isObject())
             return false;

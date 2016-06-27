@@ -14,6 +14,8 @@ of MIT license. See the LICENSE file for details.
 #include <restify/request.h>
 #include <json/json.h>
 
+#include <restify/helpers.h>
+
 TEST_CASE("request")
 {
     restify::Request r;
