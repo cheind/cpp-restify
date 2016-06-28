@@ -105,7 +105,7 @@ struct mg_callbacks {
   //    non-NULL: pointer to the file contents in memory. data_len must be
   //              initilized with the size of the memory block.
   const char * (*open_file)(const struct mg_connection *,
-                             const char *getPath, size_t *data_len);
+                             const char *path, size_t *data_len);
 
   // Called when mongoose is about to serve Lua server page (.lp file), if
   // Lua support is enabled.
@@ -259,7 +259,7 @@ int mg_printf(struct mg_connection *,
 
 
 // Send contents of the entire file together with HTTP headers.
-void mg_send_file(struct mg_connection *conn, const char *getPath);
+void mg_send_file(struct mg_connection *conn, const char *path);
 
 
 // Read data from the remote end, return number of bytes read.

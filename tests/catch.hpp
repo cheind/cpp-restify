@@ -539,7 +539,7 @@ template<typename C>
 class MethodTestCase : public SharedImpl<ITestCase> {
 
 public:
-    MethodTestCase( void (C::*getMethod)() ) : m_method( getMethod ) {}
+    MethodTestCase( void (C::*method)() ) : m_method( method ) {}
 
     virtual void invoke() const {
         C obj;
@@ -570,11 +570,11 @@ struct AutoReg {
                 NameAndDesc const& nameAndDesc );
 
     template<typename C>
-    AutoReg(    void (C::*getMethod)(),
+    AutoReg(    void (C::*method)(),
                 char const* className,
                 NameAndDesc const& nameAndDesc,
                 SourceLineInfo const& lineInfo ) {
-        registerTestCase(   new MethodTestCase<C>( getMethod ),
+        registerTestCase(   new MethodTestCase<C>( method ),
                             className,
                             nameAndDesc,
                             lineInfo );
@@ -9359,7 +9359,7 @@ int main (int argc, char * const argv[]) {
 #ifdef CATCH_CONFIG_VARIADIC_MACROS
     #define TEST_CASE( ... ) INTERNAL_CATCH_TESTCASE( __VA_ARGS__ )
     #define TEST_CASE_METHOD( className, ... ) INTERNAL_CATCH_TEST_CASE_METHOD( className, __VA_ARGS__ )
-    #define METHOD_AS_TEST_CASE( getMethod, ... ) INTERNAL_CATCH_METHOD_AS_TEST_CASE( getMethod, __VA_ARGS__ )
+    #define METHOD_AS_TEST_CASE( method, ... ) INTERNAL_CATCH_METHOD_AS_TEST_CASE( method, __VA_ARGS__ )
     #define SECTION( ... ) INTERNAL_CATCH_SECTION( __VA_ARGS__ )
     #define FAIL( ... ) INTERNAL_CATCH_MSG( Catch::ResultWas::ExplicitFailure, Catch::ResultDisposition::Normal, "FAIL", __VA_ARGS__ )
     #define SUCCEED( ... ) INTERNAL_CATCH_MSG( Catch::ResultWas::Ok, Catch::ResultDisposition::ContinueOnFailure, "SUCCEED", __VA_ARGS__ )

@@ -1087,7 +1087,7 @@ private:
  */
 class JSON_API Path {
 public:
-  Path(const JSONCPP_STRING& getPath,
+  Path(const JSONCPP_STRING& path,
        const PathArgument& a1 = PathArgument(),
        const PathArgument& a2 = PathArgument(),
        const PathArgument& a3 = PathArgument(),
@@ -1104,12 +1104,12 @@ private:
   typedef std::vector<const PathArgument*> InArgs;
   typedef std::vector<PathArgument> Args;
 
-  void makePath(const JSONCPP_STRING& getPath, const InArgs& in);
-  void addPathInArg(const JSONCPP_STRING& getPath,
+  void makePath(const JSONCPP_STRING& path, const InArgs& in);
+  void addPathInArg(const JSONCPP_STRING& path,
                     const InArgs& in,
                     InArgs::const_iterator& itInArg,
                     PathArgument::Kind kind);
-  void invalidPath(const JSONCPP_STRING& getPath, int location);
+  void invalidPath(const JSONCPP_STRING& path, int location);
 
   Args args_;
 };
