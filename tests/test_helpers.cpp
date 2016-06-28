@@ -56,9 +56,31 @@ TEST_CASE("helpers-json-builder") {
         .set("body.elements.[0]", "a")
         .set("body.elements.[1]", "b")
         .set("body.elements.[2]", "c")
+        .set("body.elements", "[3]", "d")
         .toJson();
 
    
+    REQUIRE(v["body"].isObject());
+    REQUIRE(v["body"]["message"].asString() == "Hello World");
+    REQUIRE(v["body"]["elements"].isArray());
+    REQUIRE(v["body"]["elements"].size() == 4);
+    REQUIRE(v["body"]["elements"][0] == "a");
+    REQUIRE(v["body"]["elements"][1] == "b");
+    REQUIRE(v["body"]["elements"][2] == "c");
+    REQUIRE(v["body"]["elements"][3] == "d");
+    REQUIRE(v["body"]["count"].asInt() == 3);
+}
+
+TEST_CASE("helpers-json-builder-alt") {
+
+    Json::Value v = restify::json()
+        ("body.message", "Hello World")
+        ("body.count", 3)
+        ("body.elements.[0]", "a")
+        ("body.elements.[1]", "b")
+        ("body.elements.[2]", "c");
+
+
     REQUIRE(v["body"].isObject());
     REQUIRE(v["body"]["message"].asString() == "Hello World");
     REQUIRE(v["body"]["elements"].isArray());
@@ -67,14 +89,15 @@ TEST_CASE("helpers-json-builder") {
     REQUIRE(v["body"]["elements"][1] == "b");
     REQUIRE(v["body"]["elements"][2] == "c");
     REQUIRE(v["body"]["count"].asInt() == 3);
+
 }
 
-TEST_CASE("helpers-json-builder-alt") {
+TEST_CASE("helpers-json-builder-adapt") {
 
-    restify::JsonBuilder jbp;
+    Json::Value val;
+    val["body"]["message"] = "Hello World";
 
-    Json::Value v = restify::json()
-        ("body.message", "Hello World")
+    Json::Value v = restify::json(val)
         ("body.count", 3)
         ("body.elements.[0]", "a")
         ("body.elements.[1]", "b")
@@ -98,6 +121,7 @@ TEST_CASE("helpers-json-builder-alt") {
 #include <restify/error.h>
 #include <restify/handler.h>
 
+/*
 TEST_CASE("server") {
     
     Json::Value v(Json::nullValue);
@@ -127,3 +151,5 @@ TEST_CASE("server") {
     
     
 }
+
+*/

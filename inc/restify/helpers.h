@@ -13,9 +13,11 @@
 
 #include <restify/interface.h>
 #include <restify/error.h>
+#include <restify/non_copyable.h>
 #include <json/json.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace restify {
 
@@ -166,20 +168,40 @@ namespace restify {
     class CPPRESTIFY_INTERFACE JsonBuilder {
     public:
         JsonBuilder();
+        JsonBuilder(Json::Value &adapt);
 
-        JsonBuilder &set(const std::string &path, const Json::Value &value);
-        JsonBuilder operator()(const std::string &path, const Json::Value &value);
+        JsonBuilder &set(const std::string &key, const Json::Value &value);
+        JsonBuilder &set(const std::string &key1, const std::string &key2, const Json::Value &value);
+        JsonBuilder operator()(const std::string &key, const Json::Value &value);
+        JsonBuilder operator()(const std::string &key1, const std::string &key2, const Json::Value &value);
         operator const Json::Value&() const;
 
         const Json::Value &toJson() const;
+
+        static void nullDelete(Json::Value * val);
+        static void defaultDelete(Json::Value * val);
+
+
     private:
-        CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);
+        typedef std::shared_ptr<Json::Value> JsonPtr;
+        CPPRESTIFY_NO_INTERFACE_WARN(JsonPtr, _root);
     };
 
 
     /** Return a new Json builder. */
     CPPRESTIFY_INTERFACE
     JsonBuilder json();
+
+    /** Return a new Json builder. */
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json(Json::Value &adaptTo);
+
+    /** Return a new Json builder. */
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json(Request &request);
+
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json(Response &response);
 
 }
 

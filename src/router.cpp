@@ -20,16 +20,12 @@
 #include <iostream>
 
 namespace restify {
-
-    typedef std::shared_ptr<RequestHandler> RequestHandlerPtr;
-    typedef std::vector<std::pair<std::string, std::string> > ArrayOfKeyValues;
-
     const std::string CapturePattern = "(?:([^\\/]+?))";
     const std::regex PathRegex(":([^\\/]+)?");
 
     class Route {
     public:
-        Route(const Json::Value &cfg, RequestHandlerPtr handler)
+        Route(const Json::Value &cfg, const RequestHandler &handler)
             :_cfg(cfg), _handler(handler)
         {
             const std::string path = cfg["path"].asString();
@@ -51,14 +47,14 @@ namespace restify {
         }
 
         bool handle(Request & req, Response & rep) const {
-            return (*_handler)(req, rep);
+            return _handler(req, rep);
         }
 
 
         /** Match */
         bool match(Request & req, Json::Value &extractedParams) const {
-            const std::string path = req.path();
-            const std::string method = req.method();
+            const std::string path = req.getPath();
+            const std::string method = req.getMethod();
 
 
             const Json::Value &methods = _cfg["methods"];
@@ -94,7 +90,7 @@ namespace restify {
 
 
         Json::Value _cfg;
-        RequestHandlerPtr _handler;
+        RequestHandler _handler;
         std::regex _matchRegex;
         std::vector<std::string> _keys;    
     };
@@ -102,7 +98,7 @@ namespace restify {
     struct Router::PrivateData {
         typedef std::vector<Route> ArrayOfRoute;
         ArrayOfRoute routes;
-        RequestHandlerPtr defaultRoute;
+        RequestHandler defaultRoute;
         
         PrivateData() {}
     };
@@ -137,17 +133,16 @@ namespace restify {
         });
 
         if (i == _data->routes.end()) {
-            _data->routes.emplace_back(cfg, std::make_shared<RequestHandler>(handler));
-        }
-        else {
-            *i = Route(cfg, std::make_shared<RequestHandler>(handler));
+            _data->routes.emplace_back(cfg, handler);
+        } else {
+            *i = Route(cfg, handler);
         }
 
         return true;
     }
 
     void Router::setDefaultRoute(const RequestHandler & handler) {
-        _data->defaultRoute = std::make_shared<RequestHandler>(handler);
+        _data->defaultRoute = handler;
     }
 
     bool Router::dispatch(Request & req, Response & rep) const
@@ -161,8 +156,8 @@ namespace restify {
             if (!r.match(req, pathParams))
                 return false;
             
-            Json::Value &params = req.params();
-            if (!jsonMerge(params, pathParams)) {
+            Json::Value &getParams = req.toJson()[Request::Keys::params];
+            if (!jsonMerge(getParams, pathParams)) {
                 CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to merge parameters.");
             }
             
@@ -173,7 +168,7 @@ namespace restify {
         if (i == _data->routes.end()) {
             // No route matched, invoke default handle if available.
             if (_data->defaultRoute) {
-                return (*_data->defaultRoute)(req, rep);
+                return _data->defaultRoute(req, rep);
             } else {
                 return false;
             }

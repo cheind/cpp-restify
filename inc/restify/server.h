@@ -40,6 +40,12 @@ namespace restify {
         static int onBeginRequestCallback(struct mg_connection *conn);
 
         bool handleRequest(struct mg_connection *conn, const struct mg_request_info *info);
+
+        void readRequestHeaders(const struct mg_request_info *info, Request &request) const;
+        void readRequestMethod(const struct mg_request_info *info, Request &request) const;
+        void readRequestPath(const struct mg_request_info *info, Request &request) const;
+        void readRequestBody(struct mg_connection *conn, Request &request) const;
+        void readQueryString(const struct mg_request_info *info, Request &request) const;
         
         struct PrivateData;
         CPPRESTIFY_NO_INTERFACE_WARN(std::unique_ptr<PrivateData>, _data);

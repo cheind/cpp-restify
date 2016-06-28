@@ -22,7 +22,15 @@ namespace restify {
     {
     public:
 
+        struct Keys {
+            static constexpr const char *headers = "headers";
+            static constexpr const char *statusCode = "statusCode";
+            static constexpr const char *version = "version";
+            static constexpr const char *body = "body";
+        };
+
         Response();
+        Response(const Json::Value &opts);
         ~Response();
         
         Response &setCode(int setCode);
@@ -34,7 +42,7 @@ namespace restify {
         class CPPRESTIFY_INTERFACE JsonBodyBuilder {
         public:
             JsonBodyBuilder(Response &response);
-            JsonBodyBuilder &set(const std::string &path, const Json::Value &value);
+            JsonBodyBuilder &set(const std::string &key, const Json::Value &value);
             Response &endBody();
         private:
             Response &_response;
@@ -44,7 +52,7 @@ namespace restify {
         JsonBodyBuilder beginBody();
         
         const Json::Value &toJson() const;
-        
+        Json::Value &toJson();
 
     private:
 

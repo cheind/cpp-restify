@@ -9,6 +9,8 @@
 */
 
 #include <restify/helpers.h>
+#include <restify/request.h>
+#include <restify/response.h>
 #include <json/json.h>
 
 namespace restify {
@@ -58,32 +60,67 @@ namespace restify {
         return tokens;
     }
 
-    JsonBuilder json() {
-        return JsonBuilder();
-    }
-
     JsonBuilder::JsonBuilder()
-        :_root(Json::objectValue)
+        :_root(new Json::Value(), JsonBuilder::defaultDelete)
     {}
 
-    JsonBuilder & JsonBuilder::set(const std::string & path, const Json::Value & value) {
-        Json::Path(path).make(_root) = value;
+    JsonBuilder::JsonBuilder(Json::Value & adapt) 
+        :_root(&adapt, JsonBuilder::nullDelete)
+    {}
+
+    
+    JsonBuilder & JsonBuilder::set(const std::string & key, const Json::Value & value) {
+        Json::Path(key).make(*_root) = value;
         return *this;
     }
 
-    JsonBuilder JsonBuilder::operator()(const std::string & path, const Json::Value & value) {
-        return set(path, value);
+    JsonBuilder & JsonBuilder::set(const std::string & key1, const std::string & key2, const Json::Value & value) {
+        Json::Path(key1 + "." + key2).make(*_root) = value;
+        return *this;
+    }
+
+    JsonBuilder JsonBuilder::operator()(const std::string & key, const Json::Value & value) {
+        return set(key, value);
+        return *this;
+    }
+
+    JsonBuilder JsonBuilder::operator()(const std::string & key1, const std::string & key2, const Json::Value & value) {
+        return set(key1, key2, value);
         return *this;
     }
 
     JsonBuilder::operator const Json::Value&() const {
-        return _root;
+        return *_root;
     }
 
     const Json::Value & JsonBuilder::toJson() const {
-        return _root;
+        return *_root;
     }
 
+    void JsonBuilder::nullDelete(Json::Value * val) {
+
+    }
+
+    void JsonBuilder::defaultDelete(Json::Value * val) {
+        if (val)
+            delete val;
+    }
+
+    JsonBuilder json() {
+        return JsonBuilder();
+    }
+
+    JsonBuilder json(Json::Value &adaptTo) {
+        return JsonBuilder(adaptTo);
+    }
+
+     JsonBuilder json(Request & request) {
+        return JsonBuilder(request.toJson());
+    }
+
+     JsonBuilder json(Response & response) {
+        return JsonBuilder(response.toJson());
+    }
 
 
 }

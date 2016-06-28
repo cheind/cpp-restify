@@ -13,16 +13,19 @@
 
 namespace restify {
     
-#define HEADERS_KEY "headers"
-#define BODY_KEY "body"
-#define HTTPSTATUSCODE_KEY "statusCode"
-#define HTTPVERSION_KEY "version"
-         
+        
 
     Response::Response()
         :_root(Json::objectValue)
     {
-        _root[HEADERS_KEY] = Json::Value(Json::objectValue);
+        _root[Keys::headers] = Json::Value(Json::objectValue);
+    }
+
+    Response::Response(const Json::Value & opts) 
+        : _root(opts)
+    {
+        if (_root[Keys::headers].isNull())
+            _root[Keys::headers] = Json::Value(Json::objectValue);
     }
 
     Response::~Response()
@@ -30,23 +33,23 @@ namespace restify {
     }
     
     Response &Response::setCode(int setCode) {
-        _root[HTTPSTATUSCODE_KEY] = setCode;
+        _root[Keys::statusCode] = setCode;
         return *this;
     }
 
     
     Response &Response::setBody(const Json::Value &value) {
-        _root[BODY_KEY] = value;
+        _root[Keys::body] = value;
         return *this;
     }
     
     Response &Response::setHeader(const std::string &key, const Json::Value &value) {
-        _root[HEADERS_KEY][key] = value;
+        _root[Keys::headers][key] = value;
         return *this;
     }
     
     Response &Response::setVersion(const std::string &value) {
-        _root[HTTPVERSION_KEY] = value;
+        _root[Keys::version] = value;
         return *this;
     }
 
@@ -64,18 +67,21 @@ namespace restify {
         return _root;
     }
 
+    Json::Value & Response::toJson() {
+        return _root;
+    }
+
     Response::JsonBodyBuilder::JsonBodyBuilder(Response & response)
-        :_response(response)
+        :_response(response), _builder(response.toJson()[Keys::body])
     {
     }
 
-    Response::JsonBodyBuilder & Response::JsonBodyBuilder::set(const std::string & path, const Json::Value & value) {
-        _builder.set(path, value);
+    Response::JsonBodyBuilder & Response::JsonBodyBuilder::set(const std::string & key, const Json::Value & value) {
+        _builder.set(key, value);
         return *this;
     }
 
     Response & Response::JsonBodyBuilder::endBody() {
-        _response._root[BODY_KEY] = _builder.toJson();
         return _response;
     }
 

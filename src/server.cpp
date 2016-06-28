@@ -100,29 +100,16 @@ namespace restify {
             // Setup request object
             Request request;
 
-            request
-                .path(info->uri)
-                .method(info->request_method);
-
-            if (info->query_string) {
-                const int bufferSize = 2048;
-                char buffer[bufferSize];
-
-                mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
-
-                request.queryString(buffer);
-            }
-
-            Json::Value &headers = request.headers();
-            for (int i = 0; i < info->num_headers; ++i) {
-                headers[info->http_headers[i].name] = info->http_headers[i].value;
-            }
+            readRequestPath(info, request);
+            readRequestMethod(info, request);
+            readRequestHeaders(info, request);
+            readRequestBody(conn, request);
 
             // Route request
             Response response;
             if (!_data->router.dispatch(request, response)) {
                 std::ostringstream oss;
-                oss << "Route not found " << request.path();
+                oss << "Route not found " << request.getPath();
                 throw Error(StatusCode::NotFound, oss.str().c_str());                
             }
 
@@ -146,6 +133,68 @@ namespace restify {
             const std::string responseString = _data->renderError(myError);
             mg_write(conn, responseString.c_str(), responseString.size());
             return true;
+        }
+    }
+
+    void Server::readRequestMethod(const mg_request_info * info, Request & request) const {
+        Json::Value &root = request.toJson();
+        root[Request::Keys::method] = info->request_method;        
+    }
+
+    void Server::readRequestPath(const mg_request_info * info, Request & request) const {
+        Json::Value &root = request.toJson();
+        root[Request::Keys::path] = info->uri;
+    }
+
+    void Server::readRequestHeaders(const mg_request_info * info, Request & request) const {
+        Json::Value &root = request.toJson();
+        Json::Value &getHeaders = root[Request::Keys::params];
+        for (int i = 0; i < info->num_headers; ++i) {
+            getHeaders[info->http_headers[i].name] = info->http_headers[i].value;
+        }
+    }
+    void Server::readRequestBody(mg_connection * conn, Request & request) const {
+        std::ostringstream oss;
+        std::vector<char> partialBodyData(1024);
+        int read = 0;
+        while ((read = mg_read(conn, &partialBodyData.at(0), 1024)) > 0) {
+            oss << std::string(partialBodyData.begin(), partialBodyData.begin() + read);
+        }
+
+        if (read < 0) {
+            throw Error(StatusCode::BadRequest, "Message transfer not complete.");
+        }
+
+        Json::Value &root = request.toJson();
+        root[Request::Keys::body] = oss.str();
+    }
+
+    void Server::readQueryString(const mg_request_info * info, Request & request) const {
+        Json::Value &root = request.toJson();
+        
+        if (info->query_string) {
+
+            // Decode query string.
+            const int bufferSize = 2048;
+            char buffer[bufferSize];
+            mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
+            const std::string decodedQueryString(buffer);
+
+            // Update request params.
+            Json::Value &getParams = root[Request::Keys::params];
+            std::vector<std::string> pairs = splitString(decodedQueryString, '&', false);
+            for (auto p : pairs) {
+                std::vector<std::string> keyval = splitString(p, '=', true);
+
+                if (keyval.size() != 2 || keyval.front().empty() || keyval.back().empty()) {
+                    CPPRESTIFY_FAIL(StatusCode::BadRequest, "Query string is malformed.");
+                }
+
+                getParams[keyval[0]] = keyval[1];
+            }
+
+            // Set query string
+            root[Request::Keys::query] = decodedQueryString;
         }
     }
 

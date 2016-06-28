@@ -3893,7 +3893,7 @@ PathArgument::PathArgument(const JSONCPP_STRING& key)
 // class Path
 // //////////////////////////////////////////////////////////////////
 
-Path::Path(const JSONCPP_STRING& path,
+Path::Path(const JSONCPP_STRING& getPath,
            const PathArgument& a1,
            const PathArgument& a2,
            const PathArgument& a3,
@@ -3905,18 +3905,18 @@ Path::Path(const JSONCPP_STRING& path,
   in.push_back(&a3);
   in.push_back(&a4);
   in.push_back(&a5);
-  makePath(path, in);
+  makePath(getPath, in);
 }
 
-void Path::makePath(const JSONCPP_STRING& path, const InArgs& in) {
-  const char* current = path.c_str();
-  const char* end = current + path.length();
+void Path::makePath(const JSONCPP_STRING& getPath, const InArgs& in) {
+  const char* current = getPath.c_str();
+  const char* end = current + getPath.length();
   InArgs::const_iterator itInArg = in.begin();
   while (current != end) {
     if (*current == '[') {
       ++current;
       if (*current == '%')
-        addPathInArg(path, in, itInArg, PathArgument::kindIndex);
+        addPathInArg(getPath, in, itInArg, PathArgument::kindIndex);
       else {
         ArrayIndex index = 0;
         for (; current != end && *current >= '0' && *current <= '9'; ++current)
@@ -3924,9 +3924,9 @@ void Path::makePath(const JSONCPP_STRING& path, const InArgs& in) {
         args_.push_back(index);
       }
       if (current == end || *current++ != ']')
-        invalidPath(path, int(current - path.c_str()));
+        invalidPath(getPath, int(current - getPath.c_str()));
     } else if (*current == '%') {
-      addPathInArg(path, in, itInArg, PathArgument::kindKey);
+      addPathInArg(getPath, in, itInArg, PathArgument::kindKey);
       ++current;
     } else if (*current == '.') {
       ++current;

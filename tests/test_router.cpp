@@ -45,12 +45,14 @@ TEST_CASE("router")
         return true;
     });
 
+    using restify::Request;
+
     {
         // Unknown route
-        restify::Request req;
-        req
-            .method("GET")
-            .path("/nothere");
+        restify::Request req;        
+        restify::json(req)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/nothere");
 
         restify::Response rep;
 
@@ -60,9 +62,9 @@ TEST_CASE("router")
     {
         // Known route, wrong method
         restify::Request req;
-        req
-            .method("PUT")
-            .path("/users");
+        restify::json(req)
+            (Request::Keys::method, "PUT")
+            (Request::Keys::path, "/users");
 
         restify::Response rep;
 
@@ -72,9 +74,9 @@ TEST_CASE("router")
     {
         // Known route and method
         restify::Request req;
-        req
-            .method("POST")
-            .path("/users");
+        restify::json(req)
+            (Request::Keys::method, "POST")
+            (Request::Keys::path, "/users");
 
         restify::Response rep;
 
@@ -84,46 +86,46 @@ TEST_CASE("router")
     {
         // Known route
         restify::Request req;
-        req
-            .method("GET")
-            .path("/users/123");
+        restify::json(req)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users/123");
 
         restify::Response rep;
 
         REQUIRE(router.dispatch(req, rep));
-        REQUIRE(req.param("id").isString());        
-        REQUIRE(req.param("id") == "123");
+        REQUIRE(req.getParam("id").isString());        
+        REQUIRE(req.getParam("id") == "123");
     }
 
     {
-        // Known route with types
+        // Known route
         restify::Request req;
-        req
-            .method("GET")
-            .path("/users/123/card/456");
+        restify::json(req)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users/123/card/456");
 
         restify::Response rep;
         
         using restify::json_cast;
 
         REQUIRE(router.dispatch(req, rep));
-        REQUIRE(json_cast<int>(req.param("id")) == 123);
-        REQUIRE(json_cast<int>(req.param("number")) == 456);
+        REQUIRE(json_cast<int>(req.getParam("id")) == 123);
+        REQUIRE(json_cast<int>(req.getParam("number")) == 456);
     }
 
     {
         // Known route with types, wrong type passed
         restify::Request req;
-        req
-            .method("GET")
-            .path("/users/123/card/456dasd");
+        restify::json(req)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users/123/card/456dasd");
 
         restify::Response rep;
         
         using restify::json_cast;
 
         REQUIRE(router.dispatch(req, rep));
-        REQUIRE_THROWS_AS(json_cast<int>(req.param("number")), restify::Error);
+        REQUIRE_THROWS_AS(json_cast<int>(req.getParam("number")), restify::Error);
     }
 
 }
@@ -134,13 +136,13 @@ TEST_CASE("router-with-default") {
     int invokeDefaultCount = 0;
     int invokeUsersCount = 0;
 
-    Json::Value cfg;
-    cfg["path"] = "/users";
-    cfg["methods"].append("GET");
-
-    router.addRoute(cfg, [&invokeUsersCount](const restify::Request &req, restify::Response &rep) {
-        ++invokeUsersCount;
-        return true;
+    router.addRoute(
+        restify::json()
+            ("path", "/users")
+            ("methods", "GET"),
+        [&invokeUsersCount](const restify::Request &req, restify::Response &rep) {
+            ++invokeUsersCount;
+            return true;
     });
 
     router.setDefaultRoute([&invokeDefaultCount](const restify::Request &req, restify::Response &rep) {
@@ -150,14 +152,44 @@ TEST_CASE("router-with-default") {
 
     restify::Response rep;
 
-    REQUIRE(router.dispatch(restify::Request().method("GET").path("/users"), rep));
-    REQUIRE(router.dispatch(restify::Request().method("GET").path("/not-here"), rep));
-    REQUIRE(router.dispatch(restify::Request().method("GET").path("/users/123"), rep));
-    REQUIRE(router.dispatch(restify::Request().method("GET").path("/"), rep));
-    REQUIRE(router.dispatch(restify::Request().method("GET").path("/"), rep));
+    using restify::Request;
+
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users");
+        REQUIRE(router.dispatch(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/not-here");
+        REQUIRE(router.dispatch(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users/123");
+        REQUIRE(router.dispatch(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/");
+        REQUIRE(router.dispatch(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "//");
+        REQUIRE(router.dispatch(r, rep));
+    }
 
     REQUIRE(invokeUsersCount == 1);
     REQUIRE(invokeDefaultCount == 4);
-
-
 }

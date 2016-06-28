@@ -19,54 +19,54 @@ namespace restify {
     class CPPRESTIFY_INTERFACE Request
     {
     public:
+        struct Keys {
+            static constexpr const char *params = "params";
+            static constexpr const char *headers = "headers";
+            static constexpr const char *method = "method";
+            static constexpr const char *path = "path";
+            static constexpr const char *query = "query";
+            static constexpr const char *body = "body";
+        };
 
         Request();
+        Request(const Json::Value &opts);
         ~Request();
 
         /** Return the HTTP method. */
-        std::string method() const;
-
-        /** Set the HTTP method. */
-        Request &method(const std::string &method);
+        std::string getMethod() const;
 
         /** Return the URI decoded path.*/
-        std::string path() const;
-
-        /** Set the URI decoded path. */
-        Request &path(const std::string &path);
+        std::string getPath() const;
         
         /** Return the URI decoded query string.*/
-        std::string queryString() const;
-        
-        /** Set the URI decoded query string. Note this updates the params() field. */
-        Request &queryString(const std::string &path);
+        std::string getQueryString() const;
+
+        /** Return the message body. */
+        Json::Value getBody() const;
 
         /** Return immutable reference to query parameters. */
-        const Json::Value &params() const;
+        const Json::Value &getParams() const;
 
         /** Return immutable reference to a specific query parameter. */
-        const Json::Value &param(const std::string &key) const;
+        const Json::Value &getParam(const std::string &key) const;
 
         /** Return immutable reference to a specific query parameter. */
-        const Json::Value param(const std::string &key, const Json::Value &defaultValue) const;
-
-        /** Return mutable reference to query parameters. */
-        Json::Value &params();
+        const Json::Value getParam(const std::string &key, const Json::Value &defaultValue) const;
 
         /** Return immutable reference to HTTP headers.*/
-        const Json::Value &headers() const;
+        const Json::Value &getHeaders() const;
 
-        /** Return mutable reference to HTTP headers. */
-        Json::Value &headers();
+        /** Return immutable reference to a specific header parameter. */
+        const Json::Value &getHeader(const std::string &key) const;
 
-        /** Return immutable reference to a specific header. */
-        const Json::Value &setHeader(const std::string &key) const;
-
-        /** Return immutable reference to a specific header. */
-        const Json::Value setHeader(const std::string &key, const Json::Value &defaultValue) const;
+        /** Return immutable reference to a specific header parameter. */
+        const Json::Value getHeader(const std::string &key, const Json::Value &defaultValue) const;
 
         /** Convert request to JSON */
         const Json::Value &toJson() const;
+
+        /** Convert request to JSON */
+        Json::Value &toJson();
 
     private:
         CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);

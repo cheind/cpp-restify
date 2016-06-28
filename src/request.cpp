@@ -14,107 +14,76 @@
 
 namespace restify {
 
-    #define PARAMS_KEY "params"
-    #define HEADERS_KEY "headers"
-    #define METHOD_KEY "method"
-    #define PATH_KEY "path"
-    #define QUERY_KEY "queryString"
-
     Request::Request()
         :_root(Json::objectValue)
     {
-        _root[PARAMS_KEY] = Json::Value(Json::objectValue);
-        _root[HEADERS_KEY] = Json::Value(Json::objectValue);
+        _root[Keys::params] = Json::Value(Json::objectValue);
+        _root[Keys::headers] = Json::Value(Json::objectValue);
     }
+    
+    Request::Request(const Json::Value & opts)
+        :_root(opts)
+    {
+        if (_root[Keys::params].isNull())
+            _root[Keys::params] = Json::Value(Json::objectValue);
 
+        if (_root[Keys::headers].isNull())
+            _root[Keys::headers] = Json::Value(Json::objectValue);
+    }
 
     Request::~Request()        
     {}
   
-    std::string Request::method() const
+    std::string Request::getMethod() const
     {
-        return _root.get(METHOD_KEY, "GET").asString();
+        return _root.get(Keys::method, "GET").asString();
     }
 
-    Request &Request::method(const std::string & method)
+    std::string Request::getPath() const
     {
-        _root[METHOD_KEY] = method;
-        return *this;
-    }
-
-    std::string Request::path() const
-    {
-        return _root.get(PATH_KEY, "/").asString();
-    }
-
-    Request &Request::path(const std::string & path)
-    {
-        _root[PATH_KEY] = path;
-        return *this;
+        return _root.get(Keys::path, "/").asString();
     }
     
-    std::string Request::queryString() const {
-        return _root.get(QUERY_KEY, "").asString();
-    }
-    
-    Request &Request::queryString(const std::string &path) {
-        _root[QUERY_KEY] = path;
-        
-        // Split string at '&'
-        Json::Value &keyvals = params();
-        std::vector<std::string> pairs = splitString(path, '&', false);
-        for (auto p : pairs) {
-            std::vector<std::string> keyval = splitString(p, '=', true);
-            
-            if (keyval.size() != 2) {
-                CPPRESTIFY_FAIL(StatusCode::BadRequest, "Query string is malformed.");
-            }
-            
-            keyvals[keyval[0]] = keyval[1];
-        }
-        
-        return *this;
+    std::string Request::getQueryString() const {
+        return _root.get(Keys::query, "").asString();
     }
 
-    const Json::Value & Request::params() const
+    Json::Value Request::getBody() const {
+        return _root.get(Keys::body, "").asString();
+    }
+
+    const Json::Value & Request::getParams() const
     {
-        return _root[PARAMS_KEY];
+        return _root[Keys::params];
     }
 
-    const Json::Value & Request::param(const std::string & key) const
+    const Json::Value & Request::getParam(const std::string & key) const
     {
-        return _root[PARAMS_KEY][key];
+        return _root[Keys::params][key];
     }
 
-    const Json::Value Request::param(const std::string & key, const Json::Value & defaultValue) const {
-        return _root[PARAMS_KEY].get(key, defaultValue);
+    const Json::Value Request::getParam(const std::string & key, const Json::Value & defaultValue) const {
+        return _root[Keys::params].get(key, defaultValue);
     }
 
-    Json::Value & Request::params()
+    const Json::Value & Request::getHeaders() const
     {
-        return _root[PARAMS_KEY];
+        return _root[Keys::headers];
     }
 
-    const Json::Value & Request::headers() const
-    {
-        return _root[HEADERS_KEY];
+    const Json::Value & Request::getHeader(const std::string & key) const {
+        return _root[Keys::headers][key];
     }
 
-    Json::Value & Request::headers()
-    {
-        return _root[HEADERS_KEY];
-    }
-
-    const Json::Value & Request::setHeader(const std::string & key) const
-    {
-        return _root[HEADERS_KEY][key];
-    }
-
-    const Json::Value Request::setHeader(const std::string & key, const Json::Value & defaultValue) const {
-        return _root[HEADERS_KEY].get(key, defaultValue);
+    const Json::Value Request::getHeader(const std::string & key, const Json::Value & defaultValue) const {
+        return _root[Keys::headers].get(key, defaultValue);
     }
     
     const Json::Value &Request::toJson() const {
+        return _root;
+    }
+
+    Json::Value & Request::toJson() {
         return _root;
     }
 
