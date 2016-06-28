@@ -18,6 +18,11 @@
 
 namespace restify {
 
+#ifdef CPPRESTIFY_WIN
+    #pragma warning (push)
+    #pragma warning (disable : 4275)
+#endif
+
     class CPPRESTIFY_INTERFACE Error : public std::runtime_error
     {
     public:
@@ -26,10 +31,16 @@ namespace restify {
         Error(StatusCode code, const char *message);
         Error(StatusCode code, const char *message, int line, const char *file);
 
+        const Json::Value &toJson() const;
+
     private:
-        Json::Value _details;
+        CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _details);
     };
     
+#ifdef CPPRESTIFY_WIN
+    #pragma warning (pop)
+#endif
+
     
 #define CPPRESTIFY_FAIL(code, message) \
     throw Error(code, message, __LINE__, __FILE__);

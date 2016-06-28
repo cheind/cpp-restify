@@ -31,12 +31,10 @@ namespace restify {
     }
     
     std::string trimString(const std::string &str, const std::string &ws) {
-        
-        
-        
+
         const auto strBegin = str.find_first_not_of(ws);
         if (strBegin == std::string::npos)
-            return ""; // no content
+            return std::string();
         
         const auto strEnd = str.find_last_not_of(ws);
         const auto strRange = strEnd - strBegin + 1;

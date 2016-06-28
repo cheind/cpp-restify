@@ -28,8 +28,6 @@ namespace restify {
     CPPRESTIFY_INTERFACE
     std::vector<std::string> splitString(const std::string &str, const char delim, bool trim);
     
-    
-    
     template <typename...>
     struct always_false { static constexpr bool value = false; };
     
@@ -157,7 +155,7 @@ namespace restify {
                 default:
                     break;
             }
-        } catch (Json::Exception &e) {}
+        } catch (Json::Exception &) {}
         
         CPPRESTIFY_FAIL(StatusCode::BadRequest, "Cannot convert value to double");
     }

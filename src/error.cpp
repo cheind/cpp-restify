@@ -31,4 +31,8 @@ namespace restify {
         _details["lineNumber"] = line;
         _details["fileName"] = file;
     }
+
+    const Json::Value & Error::toJson() const {
+        return _details;
+    }
 }

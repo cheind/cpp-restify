@@ -90,7 +90,7 @@ namespace restify {
             const int bufferSize = 2048;
             char buffer[bufferSize];
             
-            mg_url_decode(info->query_string, strlen(info->query_string), buffer, bufferSize, 0);
+            mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
             
             request.queryString(buffer);
         }

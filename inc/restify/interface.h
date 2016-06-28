@@ -12,6 +12,8 @@
 #define CPP_RESTIFY_INTERFACE_H
 
 #if defined(_WIN32) || defined(__WIN32__)
+    
+    #define CPPRESTIFY_WIN
 
     #if defined(cpp_restify_EXPORTS)
         #define CPPRESTIFY_INTERFACE __declspec(dllexport)
