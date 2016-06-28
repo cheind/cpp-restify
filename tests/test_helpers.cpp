@@ -46,25 +46,19 @@ TEST_CASE("helpers-split-string") {
     
 }
 
-TEST_CASE("helpers-JsonByPath") {
-    struct Parent {
-        int i;
-    };
+TEST_CASE("helpers-json-builder") {
     
-    Parent parent;
-    parent.i = 3;
+    restify::JsonBuilder jbp;
 
-    Json::Value v;
-    
-    restify::JsonByPath<Parent> jbp(v, parent);
-
-    jbp
+    Json::Value v = jbp
         .set("body.message", "Hello World")
         .set("body.count", 3)
         .set("body.elements.[0]", "a")
         .set("body.elements.[1]", "b")
-        .set("body.elements.[2]", "c");
+        .set("body.elements.[2]", "c")
+        .toJson();
 
+   
     REQUIRE(v["body"].isObject());
     REQUIRE(v["body"]["message"].asString() == "Hello World");
     REQUIRE(v["body"]["elements"].isArray());
@@ -73,10 +67,6 @@ TEST_CASE("helpers-JsonByPath") {
     REQUIRE(v["body"]["elements"][1] == "b");
     REQUIRE(v["body"]["elements"][2] == "c");
     REQUIRE(v["body"]["count"].asInt() == 3);
-
-    // JsonByPath should hold reference to parent and return it upon calling done().
-    parent.i = 4;
-    REQUIRE(jbp.end().i == 4);
 
 }
 

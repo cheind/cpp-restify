@@ -58,4 +58,19 @@ namespace restify {
         return tokens;
     }
 
+    JsonBuilder::JsonBuilder()
+        :_root(Json::objectValue)
+    {}
+
+    JsonBuilder & JsonBuilder::set(const std::string & path, const Json::Value & value) {
+        Json::Path(path).make(_root) = value;
+        return *this;
+    }
+
+    const Json::Value & JsonBuilder::toJson() const {
+        return _root;
+    }
+
+
+
 }

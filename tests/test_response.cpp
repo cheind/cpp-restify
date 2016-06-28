@@ -20,7 +20,7 @@ TEST_CASE("response")
         .setCode(404)
         .beginBody()
         .set("message", "Not found.")
-        .end()
+        .endBody()
         .setHeader("Location", "xxx");
 
     Json::Value c = r.toJson();

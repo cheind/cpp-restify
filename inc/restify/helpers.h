@@ -163,29 +163,16 @@ namespace restify {
     }
 
 
-    // Json by path
-
-    template<class EncapsulatingType>
-    class JsonByPath {
+    class CPPRESTIFY_INTERFACE JsonBuilder {
     public:
-        JsonByPath(Json::Value &root, EncapsulatingType &parent)
-            :_root(root), _parent(parent)
-        {}
+        JsonBuilder();
 
-        EncapsulatingType &end() {
-            return _parent;
-        }
+        JsonBuilder &set(const std::string &path, const Json::Value &value);
 
-        JsonByPath<EncapsulatingType> &set(const std::string &path, const Json::Value &value) {
-            Json::Path(path).make(_root) = value;
-            return *this;
-        }
-
+        const Json::Value &toJson() const;
     private:
-        Json::Value &_root;      
-        EncapsulatingType &_parent;
+        CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);
     };
-    
 }
 
 

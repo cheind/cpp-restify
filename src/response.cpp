@@ -56,13 +56,27 @@ namespace restify {
         return *this;
     }
 
-    JsonByPath<Response> Response::beginBody() {
-        _root[BODY_KEY] = Json::objectValue;
-        return JsonByPath<Response>(_root[BODY_KEY], *this);
+    Response::JsonBodyBuilder Response::beginBody() {
+        return JsonBodyBuilder(*this);
     }
     
     const Json::Value &Response::toJson() const {
         return _root;
+    }
+
+    Response::JsonBodyBuilder::JsonBodyBuilder(Response & response)
+        :_response(response)
+    {
+    }
+
+    Response::JsonBodyBuilder & Response::JsonBodyBuilder::set(const std::string & path, const Json::Value & value) {
+        _builder.set(path, value);
+        return *this;
+    }
+
+    Response & Response::JsonBodyBuilder::endBody() {
+        _response._root[BODY_KEY] = _builder.toJson();
+        return _response;
     }
 
 }

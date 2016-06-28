@@ -30,12 +30,26 @@ namespace restify {
         Response &setHeader(const std::string &key, const Json::Value &value);
         Response &setVersion(const std::string &value);
         Response &setRedirectTo(const std::string &location, int code = (int)StatusCode::Moved);
-        JsonByPath<Response> beginBody();
+
+        class CPPRESTIFY_INTERFACE JsonBodyBuilder {
+        public:
+            JsonBodyBuilder(Response &response);
+            JsonBodyBuilder &set(const std::string &path, const Json::Value &value);
+            Response &endBody();
+        private:
+            Response &_response;
+            JsonBuilder _builder;
+        };
+
+        JsonBodyBuilder beginBody();
         
         const Json::Value &toJson() const;
         
 
     private:
+
+        friend class JsonBodyBuilder;
+
         CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);
     };
 
