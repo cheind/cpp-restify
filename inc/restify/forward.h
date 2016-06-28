@@ -23,6 +23,7 @@ namespace restify {
     class Router;
     class Error;
     class HttpRenderer;
+    template<class EnclosingType> class JsonByPath;
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;
     typedef std::function<std::string (const Response &rep)> ResponseRenderer;

@@ -926,12 +926,12 @@ static int match_prefix(const char *pattern, int pattern_len, const char *str) {
 // set up, for example if request parsing failed.
 static int should_keep_alive(const struct mg_connection *conn) {
   const char *http_version = conn->request_info.http_version;
-  const char *header = mg_get_header(conn, "Connection");
+  const char *setHeader = mg_get_header(conn, "Connection");
   if (conn->must_close ||
       conn->status_code == 401 ||
       mg_strcasecmp(conn->ctx->config[ENABLE_KEEP_ALIVE], "yes") != 0 ||
-      (header != NULL && mg_strcasecmp(header, "keep-alive") != 0) ||
-      (header == NULL && http_version && strcmp(http_version, "1.1"))) {
+      (setHeader != NULL && mg_strcasecmp(setHeader, "keep-alive") != 0) ||
+      (setHeader == NULL && http_version && strcmp(http_version, "1.1"))) {
     return 0;
   }
   return 1;
@@ -1551,7 +1551,7 @@ static int pull_all(FILE *fp, struct mg_connection *conn, char *buf, int len) {
 
 int mg_read(struct mg_connection *conn, void *buf, size_t len) {
   int n, buffered_len, nread;
-  const char *body;
+  const char *setBody;
 
   // If Content-Length is not set, read until socket is closed
   if (conn->consumed_content == 0 && conn->content_len == 0) {
@@ -1568,13 +1568,13 @@ int mg_read(struct mg_connection *conn, void *buf, size_t len) {
     }
 
     // Return buffered data
-    body = conn->buf + conn->request_len + conn->consumed_content;
-    buffered_len = &conn->buf[conn->data_len] - body;
+    setBody = conn->buf + conn->request_len + conn->consumed_content;
+    buffered_len = &conn->buf[conn->data_len] - setBody;
     if (buffered_len > 0) {
       if (len < (size_t) buffered_len) {
         buffered_len = (int) len;
       }
-      memcpy(buf, body, (size_t) buffered_len);
+      memcpy(buf, setBody, (size_t) buffered_len);
       len -= buffered_len;
       conn->consumed_content += buffered_len;
       nread += buffered_len;
@@ -2912,8 +2912,8 @@ static void send_file_data(struct mg_connection *conn, struct file *filep,
   }
 }
 
-static int parse_range_header(const char *header, int64_t *a, int64_t *b) {
-  return sscanf(header, "bytes=%" INT64_FMT "-%" INT64_FMT, a, b);
+static int parse_range_header(const char *setHeader, int64_t *a, int64_t *b) {
+  return sscanf(setHeader, "bytes=%" INT64_FMT "-%" INT64_FMT, a, b);
 }
 
 static void gmt_time_string(char *buf, size_t buf_len, time_t *t) {
@@ -3163,7 +3163,7 @@ static int is_not_modified(const struct mg_connection *conn,
 
 static int forward_body_data(struct mg_connection *conn, FILE *fp,
                              SOCKET sock, SSL *ssl) {
-  const char *expect, *body;
+  const char *expect, *setBody;
   char buf[MG_BUF_LEN];
   int to_read, nread, buffered_len, success = 0;
 
@@ -3179,8 +3179,8 @@ static int forward_body_data(struct mg_connection *conn, FILE *fp,
       (void) mg_printf(conn, "%s", "HTTP/1.1 100 Continue\r\n\r\n");
     }
 
-    body = conn->buf + conn->request_len + conn->consumed_content;
-    buffered_len = &conn->buf[conn->data_len] - body;
+    setBody = conn->buf + conn->request_len + conn->consumed_content;
+    buffered_len = &conn->buf[conn->data_len] - setBody;
     assert(buffered_len >= 0);
     assert(conn->consumed_content == 0);
 
@@ -3188,7 +3188,7 @@ static int forward_body_data(struct mg_connection *conn, FILE *fp,
       if ((int64_t) buffered_len > conn->content_len) {
         buffered_len = (int) conn->content_len;
       }
-      push(fp, sock, ssl, body, (int64_t) buffered_len);
+      push(fp, sock, ssl, setBody, (int64_t) buffered_len);
       conn->consumed_content += buffered_len;
     }
 
@@ -4639,11 +4639,11 @@ static int set_ports_option(struct mg_context *ctx) {
   return success;
 }
 
-static void log_header(const struct mg_connection *conn, const char *header,
+static void log_header(const struct mg_connection *conn, const char *setHeader,
                        FILE *fp) {
   const char *header_value;
 
-  if ((header_value = mg_get_header(conn, header)) == NULL) {
+  if ((header_value = mg_get_header(conn, setHeader)) == NULL) {
     (void) fprintf(fp, "%s", " -");
   } else {
     (void) fprintf(fp, " \"%s\"", header_value);

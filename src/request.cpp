@@ -105,12 +105,12 @@ namespace restify {
         return _root[HEADERS_KEY];
     }
 
-    const Json::Value & Request::header(const std::string & key) const
+    const Json::Value & Request::setHeader(const std::string & key) const
     {
         return _root[HEADERS_KEY][key];
     }
 
-    const Json::Value Request::header(const std::string & key, const Json::Value & defaultValue) const {
+    const Json::Value Request::setHeader(const std::string & key, const Json::Value & defaultValue) const {
         return _root[HEADERS_KEY].get(key, defaultValue);
     }
     

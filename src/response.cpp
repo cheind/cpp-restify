@@ -9,6 +9,7 @@
 */
 
 #include <restify/response.h>
+#include <restify/helpers.h>
 
 namespace restify {
     
@@ -28,25 +29,36 @@ namespace restify {
     {
     }
     
-    Response &Response::code(int code) {
-        _root[HTTPSTATUSCODE_KEY] = code;
+    Response &Response::setCode(int setCode) {
+        _root[HTTPSTATUSCODE_KEY] = setCode;
         return *this;
     }
 
     
-    Response &Response::body(const Json::Value &value) {
+    Response &Response::setBody(const Json::Value &value) {
         _root[BODY_KEY] = value;
         return *this;
     }
     
-    Response &Response::header(const std::string &key, const Json::Value &value) {
+    Response &Response::setHeader(const std::string &key, const Json::Value &value) {
         _root[HEADERS_KEY][key] = value;
         return *this;
     }
     
-    Response &Response::version(const std::string &value) {
+    Response &Response::setVersion(const std::string &value) {
         _root[HTTPVERSION_KEY] = value;
         return *this;
+    }
+
+    Response & Response::setRedirectTo(const std::string & location, int code) {
+        setCode(code);
+        setHeader("Location", location);
+        return *this;
+    }
+
+    JsonByPath<Response> Response::beginBody() {
+        _root[BODY_KEY] = Json::objectValue;
+        return JsonByPath<Response>(_root[BODY_KEY], *this);
     }
     
     const Json::Value &Response::toJson() const {

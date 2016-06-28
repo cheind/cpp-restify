@@ -28,6 +28,8 @@ namespace restify {
     CPPRESTIFY_INTERFACE
     std::vector<std::string> splitString(const std::string &str, const char delim, bool trim);
     
+    // Explicit Json conversion
+
     template <typename...>
     struct always_false { static constexpr bool value = false; };
     
@@ -161,7 +163,28 @@ namespace restify {
     }
 
 
+    // Json by path
 
+    template<class EncapsulatingType>
+    class JsonByPath {
+    public:
+        JsonByPath(Json::Value &root, EncapsulatingType &parent)
+            :_root(root), _parent(parent)
+        {}
+
+        EncapsulatingType &end() {
+            return _parent;
+        }
+
+        JsonByPath<EncapsulatingType> &set(const std::string &path, const Json::Value &value) {
+            Json::Path(path).make(_root) = value;
+            return *this;
+        }
+
+    private:
+        Json::Value &_root;      
+        EncapsulatingType &_parent;
+    };
     
 }
 

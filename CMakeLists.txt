@@ -49,6 +49,7 @@ target_link_libraries(cpp-restify mongoose jsoncpp)
 add_executable(cpp-restify-tests
     tests/catch.hpp
     tests/test_request.cpp
+    tests/test_response.cpp
     tests/test_router.cpp
     tests/test_helpers.cpp
 )

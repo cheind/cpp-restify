@@ -13,11 +13,11 @@
 
 namespace restify {
 
-    Error::Error(StatusCode code)
+    Error::Error(StatusCode setCode)
     :std::runtime_error("cpp-restify error")
     {
         Response r;
-        r.code(int(code));
+        r.setCode(int(setCode));
         _details = r.toJson();
     }
 
@@ -25,29 +25,29 @@ namespace restify {
         :std::runtime_error("cpp-restify error"), _details(response.toJson())
     {}
     
-    Error::Error(StatusCode code, const char *message)
+    Error::Error(StatusCode setCode, const char *message)
     :std::runtime_error(message)
     {
-        Json::Value body;
-        body["statusCode"] = int(code);
-        body["message"] = message;
+        Json::Value setBody;
+        setBody["statusCode"] = int(setCode);
+        setBody["message"] = message;
 
         Response r;
-        r.code(int(code)).body(body);
+        r.setCode(int(setCode)).setBody(setBody);
         _details = r.toJson();
     }
     
-    Error::Error(StatusCode code, const char *message, int line, const char *file)
+    Error::Error(StatusCode setCode, const char *message, int line, const char *file)
     : std::runtime_error(message)
     {
-        Json::Value body;
-        body["statusCode"] = int(code);
-        body["message"] = message;
-        body["lineNumber"] = line;
-        body["fileName"] = file;
+        Json::Value setBody;
+        setBody["statusCode"] = int(setCode);
+        setBody["message"] = message;
+        setBody["lineNumber"] = line;
+        setBody["fileName"] = file;
 
         Response r;
-        r.code(int(code)).body(body);
+        r.setCode(int(setCode)).setBody(setBody);
 
         _details = r.toJson();
     }

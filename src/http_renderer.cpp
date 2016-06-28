@@ -35,16 +35,16 @@ namespace restify {
 
         Json::Value headers(Json::objectValue);
 
-        const std::string body = renderBody(jroot, headers);
+        const std::string setBody = renderBody(jroot, headers);
 
         // Replace generated headers by headers set in response.
         jsonMerge(headers, jroot["headers"]);
 
         // Status line
-        int code = json_cast<int>(jroot.get("statusCode", 200));
+        int setCode = json_cast<int>(jroot.get("statusCode", 200));
         http << "HTTP/" << jroot.get("version", "1.1").asString() << " "
-            << code << " "
-            << reasonPhraseFromStatusCode(code) << EOL;
+            << setCode << " "
+            << reasonPhraseFromStatusCode(setCode) << EOL;
 
         // Headers
         for (const auto& key : headers.getMemberNames()) {
@@ -53,7 +53,7 @@ namespace restify {
         http << EOL;
 
         // Body
-        http << body;
+        http << setBody;
 
         return http.str();
     }
@@ -61,42 +61,42 @@ namespace restify {
     std::string HttpRenderer::renderBody(const Json::Value &jroot, Json::Value & generatedHeaders)  const {
         const Json::Value jbody = jroot.get("body", "");
         
-        std::string body;
+        std::string setBody;
 
         switch (jbody.type()) {
         case Json::stringValue:
-            body = jbody.asString();
+            setBody = jbody.asString();
             generatedHeaders["Content-Type"] = "text/plain; charset=utf-8";
-            generatedHeaders["Content-Length"] = (int)body.length();
+            generatedHeaders["Content-Length"] = (int)setBody.length();
             break;
         case Json::objectValue:
         {
             Json::FastWriter w;
             w.omitEndingLineFeed();
-            body = w.write(jbody);
+            setBody = w.write(jbody);
             generatedHeaders["Content-Type"] = "application/json; charset=utf-8";
-            generatedHeaders["Content-Length"] = (int)body.length();
+            generatedHeaders["Content-Length"] = (int)setBody.length();
             break;
         }
         default:
             CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to render body.");
         }
 
-        return body;
+        return setBody;
         
     }
 
-    std::string HttpRenderer::reasonPhraseFromStatusCode(int code) const {
+    std::string HttpRenderer::reasonPhraseFromStatusCode(int setCode) const {
 
-        if (code >= 100 && code < 200)
+        if (setCode >= 100 && setCode < 200)
             return "Informational";
-        else if (code >= 200 && code < 300)
+        else if (setCode >= 200 && setCode < 300)
             return "Success";
-        else if (code >= 300 && code < 400)
+        else if (setCode >= 300 && setCode < 400)
             return "Redirection";
-        else if (code >= 400 && code < 500)
+        else if (setCode >= 400 && setCode < 500)
             return "Client Error";
-        else if (code >= 500)
+        else if (setCode >= 500)
             return "Server Error";
         else
             return "Unknown";

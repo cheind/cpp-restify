@@ -13,6 +13,7 @@
 
 #include <restify/interface.h>
 #include <restify/codes.h>
+#include <restify/helpers.h>
 #include <json/json.h>
 
 namespace restify {
@@ -24,10 +25,12 @@ namespace restify {
         Response();
         ~Response();
         
-        Response &code(int code);
-        Response &body(const Json::Value &value);
-        Response &header(const std::string &key, const Json::Value &value);
-        Response &version(const std::string &value);
+        Response &setCode(int setCode);
+        Response &setBody(const Json::Value &value);
+        Response &setHeader(const std::string &key, const Json::Value &value);
+        Response &setVersion(const std::string &value);
+        Response &setRedirectTo(const std::string &location, int code = (int)StatusCode::Moved);
+        JsonByPath<Response> beginBody();
         
         const Json::Value &toJson() const;
         

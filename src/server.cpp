@@ -58,8 +58,9 @@ namespace restify {
         }
     }
 
-    bool Server::route(const Json::Value & opts, const RequestHandler & handler) {
-        return _data->router.addRoute(opts, handler);
+    Server &Server::route(const Json::Value & opts, const RequestHandler & handler) {
+        _data->router.addRoute(opts, handler);
+        return *this;
     }
 
     void Server::start()

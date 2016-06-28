@@ -37,7 +37,7 @@ TEST_CASE("request")
 
     REQUIRE(r.headers()["Content-Type"].asString() == "text/plain");
 
-    REQUIRE(r.header("NOT-HERE", "ABC") == "ABC");
+    REQUIRE(r.setHeader("NOT-HERE", "ABC") == "ABC");
 }
 
 TEST_CASE("request-qeury-string")

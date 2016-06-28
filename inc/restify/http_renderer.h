@@ -30,7 +30,7 @@ namespace restify {
     private:
         std::string renderMessage(const Json::Value &jroot) const;
         std::string renderBody(const Json::Value &jroot, Json::Value &generatedHeaders) const;
-        std::string reasonPhraseFromStatusCode(int code) const;
+        std::string reasonPhraseFromStatusCode(int setCode) const;
     };
 
 }

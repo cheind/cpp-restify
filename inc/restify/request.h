@@ -60,10 +60,10 @@ namespace restify {
         Json::Value &headers();
 
         /** Return immutable reference to a specific header. */
-        const Json::Value &header(const std::string &key) const;
+        const Json::Value &setHeader(const std::string &key) const;
 
         /** Return immutable reference to a specific header. */
-        const Json::Value header(const std::string &key, const Json::Value &defaultValue) const;
+        const Json::Value setHeader(const std::string &key, const Json::Value &defaultValue) const;
 
         /** Convert request to JSON */
         const Json::Value &toJson() const;

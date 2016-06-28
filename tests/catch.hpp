@@ -5490,7 +5490,7 @@ namespace Catch {
         std::string const branchName;
         unsigned int const buildNumber;
 
-        friend std::ostream& operator << ( std::ostream& os, Version const& version );
+        friend std::ostream& operator << ( std::ostream& os, Version const& setVersion );
 
     private:
         void operator=( Version const& );
@@ -6755,14 +6755,14 @@ namespace Catch {
         buildNumber( _buildNumber )
     {}
 
-    std::ostream& operator << ( std::ostream& os, Version const& version ) {
-        os  << version.majorVersion << "."
-            << version.minorVersion << "."
-            << version.patchNumber;
+    std::ostream& operator << ( std::ostream& os, Version const& setVersion ) {
+        os  << setVersion.majorVersion << "."
+            << setVersion.minorVersion << "."
+            << setVersion.patchNumber;
 
-        if( !version.branchName.empty() ) {
-            os  << "-" << version.branchName
-                << "." << version.buildNumber;
+        if( !setVersion.branchName.empty() ) {
+            os  << "-" << setVersion.branchName
+                << "." << setVersion.buildNumber;
         }
         return os;
     }

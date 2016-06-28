@@ -28,10 +28,10 @@ namespace restify {
     {
     public:
 
-        Error(StatusCode code);
+        Error(StatusCode setCode);
         Error(const Response &response);
-        Error(StatusCode code, const char *message);
-        Error(StatusCode code, const char *message, int line, const char *file);
+        Error(StatusCode setCode, const char *message);
+        Error(StatusCode setCode, const char *message, int line, const char *file);
         Error(const Error &other);
         ~Error();
 
@@ -46,8 +46,8 @@ namespace restify {
 #endif
 
     
-#define CPPRESTIFY_FAIL(code, message) \
-    throw ::restify::Error(code, message, __LINE__, __FILE__);
+#define CPPRESTIFY_FAIL(setCode, message) \
+    throw ::restify::Error(setCode, message, __LINE__, __FILE__);
  
 }
 

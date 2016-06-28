@@ -21,6 +21,7 @@ namespace restify {
         NoContent           = 204,
         
         Moved               = 301,
+        Found               = 302,
         SeeOther            = 303,
         
         
