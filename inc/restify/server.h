@@ -26,9 +26,12 @@ namespace restify {
     {
     public:
 
+        Server();
         Server(const Json::Value &options);
         ~Server();
-
+        
+        Server &setConfig(const Json::Value &options);
+        
         Server &route(const Json::Value &opts, const RequestHandler &handler);
         Server &otherwise(const RequestHandler &handler);
 
@@ -40,7 +43,6 @@ namespace restify {
         static int onBeginRequestCallback(struct mg_connection *conn);
 
         bool handleRequest(struct mg_connection *conn, const struct mg_request_info *info);
-
         void readRequestHeaders(const struct mg_request_info *info, Request &request) const;
         void readRequestMethod(const struct mg_request_info *info, Request &request) const;
         void readRequestPath(const struct mg_request_info *info, Request &request) const;

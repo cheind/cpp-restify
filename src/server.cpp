@@ -14,6 +14,7 @@
 #include <restify/response.h>
 #include <restify/http_renderer.h>
 #include <restify/error.h>
+#include <restify/helpers.h>
 #include <json/json.h>
 #include "mongoose.h"
 
@@ -28,8 +29,11 @@ namespace restify {
         HttpRenderer defaultRenderer;
         ResponseRenderer renderResponse;
         ErrorRenderer renderError;
-
-        PrivateData() {
+        Json::Value config;
+        
+        PrivateData()
+        :ctx(nullptr)
+        {
             memset(&callbacks, 0, sizeof(callbacks));
         }
     };
@@ -38,17 +42,33 @@ namespace restify {
         std::cout << message << std::endl;
         return 1;
     }
-         
-
-    Server::Server(const Json::Value & options)
-        :_data(new PrivateData())
+    
+    Server::Server()
+    :_data(new PrivateData)
     {
         _data->callbacks.begin_request = &Server::onBeginRequestCallback;
         _data->callbacks.log_message = onLogMessage;
-
-        // Default rendering
+        
         _data->renderResponse = std::bind(&HttpRenderer::renderResponse, &_data->defaultRenderer, std::placeholders::_1);
         _data->renderError = std::bind(&HttpRenderer::renderError, &_data->defaultRenderer, std::placeholders::_1);
+        
+        json(_data->config)
+            ("listening_ports", "127.0.0.1:8080")
+            ("num_threads", 50);
+        
+        
+    }
+    
+
+    Server::Server(const Json::Value & options)
+        : Server()
+    {
+        setConfig(options);
+    }
+    
+    Server &Server::setConfig(const Json::Value &options) {
+        jsonMerge(_data->config, options);
+        return *this;
     }
 
     Server::~Server()
@@ -67,16 +87,40 @@ namespace restify {
         _data->router.setDefaultRoute(handler);
         return *this;
     }
+    
+    void createMongooseOptionStrings(const Json::Value &obj, std::vector<std::string> &dst) {
+        if (!obj.isObject())
+            return;
+        
+        for (auto &e : obj.getMemberNames()) {
+            const Json::Value &v = obj[e];
+            if (v.isObject())
+                createMongooseOptionStrings(v, dst);
+            dst.push_back(e);
+            dst.push_back(json_cast<std::string>(v));
+        }
+    }
 
     void Server::start()
     {
-        const char *opts[] = { "listening_ports", "8080", NULL };
-        _data->ctx = mg_start(&_data->callbacks, this, opts);
+        std::vector<std::string> strings;
+        createMongooseOptionStrings(_data->config, strings);
+        
+        std::vector<const char*> cstrings;
+        for (auto &s : strings) {
+            cstrings.push_back(s.c_str());
+        }
+        cstrings.push_back(nullptr);
+    
+        _data->ctx = mg_start(&_data->callbacks, this, &cstrings.at(0));
     }
 
     void Server::stop()
     {
-        mg_stop(_data->ctx);
+        if (_data->ctx) {
+            mg_stop(_data->ctx);
+            _data->ctx = 0;
+        }
     }
 
     int Server::onBeginRequestCallback(mg_connection * conn) {
