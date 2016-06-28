@@ -26,6 +26,11 @@ namespace restify {
         
         std::string renderResponse(const Response &rep) const;
         std::string renderError(const Error &err) const;
+
+    private:
+        std::string renderMessage(const Json::Value &jroot) const;
+        std::string renderBody(const Json::Value &jroot, Json::Value &generatedHeaders) const;
+        std::string reasonPhraseFromStatusCode(int code) const;
     };
 
 }

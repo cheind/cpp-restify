@@ -49,6 +49,7 @@ TEST_CASE("helpers-split-string") {
 #include <restify/server.h>
 #include <restify/request.h>
 #include <restify/response.h>
+#include <restify/error.h>
 
 TEST_CASE("server") {
     
@@ -63,6 +64,9 @@ TEST_CASE("server") {
     server.route(cfg, [](const restify::Request &req, restify::Response &rep) {
         
         std::cout << req.toJson().toStyledString() << std::endl;
+
+        CPPRESTIFY_FAIL(restify::StatusCode::NotFound, "Not found");
+
         return true;
     });
     

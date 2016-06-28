@@ -127,3 +127,37 @@ TEST_CASE("router")
     }
 
 }
+
+TEST_CASE("router-with-default") {
+    restify::Router router;
+
+    int invokeDefaultCount = 0;
+    int invokeUsersCount = 0;
+
+    Json::Value cfg;
+    cfg["path"] = "/users";
+    cfg["methods"].append("GET");
+
+    router.addRoute(cfg, [&invokeUsersCount](const restify::Request &req, restify::Response &rep) {
+        ++invokeUsersCount;
+        return true;
+    });
+
+    router.setDefaultRoute([&invokeDefaultCount](const restify::Request &req, restify::Response &rep) {
+        ++invokeDefaultCount;
+        return true;
+    });
+
+    restify::Response rep;
+
+    REQUIRE(router.dispatch(restify::Request().method("GET").path("/users"), rep));
+    REQUIRE(router.dispatch(restify::Request().method("GET").path("/not-here"), rep));
+    REQUIRE(router.dispatch(restify::Request().method("GET").path("/users/123"), rep));
+    REQUIRE(router.dispatch(restify::Request().method("GET").path("/"), rep));
+    REQUIRE(router.dispatch(restify::Request().method("GET").path("/"), rep));
+
+    REQUIRE(invokeUsersCount == 1);
+    REQUIRE(invokeDefaultCount == 4);
+
+
+}

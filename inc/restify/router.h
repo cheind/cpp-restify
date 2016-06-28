@@ -29,6 +29,9 @@ namespace restify {
 
         /** Add a new route. */
         bool addRoute(const Json::Value &opts, const RequestHandler &handler);
+
+        /** Set route handler that is invoked when no other route is matched. */
+        void setDefaultRoute(const RequestHandler &handler);
         
         /** Dispatch a request. */
         bool dispatch(Request &req, Response &rep) const;

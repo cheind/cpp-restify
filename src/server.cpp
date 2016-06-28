@@ -12,6 +12,8 @@
 #include <restify/router.h>
 #include <restify/request.h>
 #include <restify/response.h>
+#include <restify/http_renderer.h>
+#include <restify/error.h>
 #include <json/json.h>
 #include "mongoose.h"
 
@@ -23,6 +25,9 @@ namespace restify {
         struct mg_context *ctx;
         struct mg_callbacks callbacks;
         Router router;
+        HttpRenderer defaultRenderer;
+        ResponseRenderer renderResponse;
+        ErrorRenderer renderError;
 
         PrivateData() {
             memset(&callbacks, 0, sizeof(callbacks));
@@ -40,6 +45,10 @@ namespace restify {
     {
         _data->callbacks.begin_request = &Server::onBeginRequestCallback;
         _data->callbacks.log_message = onLogMessage;
+
+        // Default rendering
+        _data->renderResponse = std::bind(&HttpRenderer::renderResponse, &_data->defaultRenderer, std::placeholders::_1);
+        _data->renderError = std::bind(&HttpRenderer::renderError, &_data->defaultRenderer, std::placeholders::_1);
     }
 
     Server::~Server()
@@ -64,11 +73,6 @@ namespace restify {
         mg_stop(_data->ctx);
     }
 
-    bool Server::handleRequest(Request & req, Response & rep) {
-        return _data->router.dispatch(req, rep);
-
-    }
-
     int Server::onBeginRequestCallback(mg_connection * conn) {
         const struct mg_request_info *info = mg_get_request_info(conn);
         
@@ -77,64 +81,66 @@ namespace restify {
         }
 
         Server *server = static_cast<Server*>(info->user_data);
-
-
-        // Setup request object
-        Request request;
-        
-        request
-        .path(info->uri)
-        .method(info->request_method);
-
-        if (info->query_string) {
-            const int bufferSize = 2048;
-            char buffer[bufferSize];
-            
-            mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
-            
-            request.queryString(buffer);
-        }
-        
-        Json::Value &headers = request.headers();
-        for (int i = 0; i < info->num_headers; ++i) {
-            headers[info->http_headers[i].name] = info->http_headers[i].value;
-        }
-        
-
-        Response response;
-        if (!server->handleRequest(request, response)) {
+        try {
+            return server->handleRequest(conn, info) ? 1 : 0;
+        } catch (...) {
             return 0;
-        } else {
-            return 1;
         }
+    }
 
+    bool Server::handleRequest(mg_connection * conn, const mg_request_info * info) {
 
-       
-           
+        try {
+            // Setup request object
+            Request request;
 
-        /*
-        
-        
-        char content[100];
+            request
+                .path(info->uri)
+                .method(info->request_method);
 
-        // Prepare the message we're going to send
-        int content_length = snprintf(content, sizeof(content),
-            "Hello from mongoose! Remote port: %d",
-            request_info->remote_port);
+            if (info->query_string) {
+                const int bufferSize = 2048;
+                char buffer[bufferSize];
 
-        // Send HTTP reply to the client
-        mg_printf(conn,
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
-            "Content-Length: %d\r\n"        // Always set Content-Length
-            "\r\n"
-            "%s",
-            content_length, content);
+                mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
 
-        // Returning non-zero tells mongoose that our function has replied to
-        // the client, and mongoose should not send client any more data.
-        return 1;
-        */
+                request.queryString(buffer);
+            }
+
+            Json::Value &headers = request.headers();
+            for (int i = 0; i < info->num_headers; ++i) {
+                headers[info->http_headers[i].name] = info->http_headers[i].value;
+            }
+
+            // Route request
+            Response response;
+            if (!_data->router.dispatch(request, response)) {
+                std::ostringstream oss;
+                oss << "Route not found " << request.path();
+                throw Error(StatusCode::NotFound, oss.str().c_str());                
+            }
+
+            // Format response
+            const std::string responseString = _data->renderResponse(response);
+            mg_write(conn, responseString.c_str(), responseString.size());
+
+            return true;
+
+        } catch (const Error &error) {
+            const std::string responseString = _data->renderError(error);
+            mg_write(conn, responseString.c_str(), responseString.size());
+            return true;
+        } catch (const std::exception &error) {
+            Error myError(StatusCode::InternalServerError, error.what());
+            const std::string responseString = _data->renderError(myError);
+            mg_write(conn, responseString.c_str(), responseString.size());
+            return true;
+        } catch (...) {
+            Error myError(StatusCode::InternalServerError, "Unknown error occurred. That's all we know.");
+            const std::string responseString = _data->renderError(myError);
+            mg_write(conn, responseString.c_str(), responseString.size());
+            return true;
+        }
     }
 
 }

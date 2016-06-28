@@ -18,6 +18,7 @@
 #include <memory>
 
 struct mg_connection;
+struct mg_request_info;
 
 namespace restify {
 
@@ -37,8 +38,8 @@ namespace restify {
     private:
         static int onBeginRequestCallback(struct mg_connection *conn);
 
-        bool handleRequest(Request &req, Response &rep);
-
+        bool handleRequest(struct mg_connection *conn, const struct mg_request_info *info);
+        
         struct PrivateData;
         CPPRESTIFY_NO_INTERFACE_WARN(std::unique_ptr<PrivateData>, _data);
     };

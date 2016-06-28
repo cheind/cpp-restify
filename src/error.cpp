@@ -9,28 +9,56 @@
 */
 
 #include <restify/error.h>
+#include <restify/response.h>
 
 namespace restify {
 
     Error::Error(StatusCode code)
-    :std::runtime_error("cpp-restify error"), _details(Json::objectValue)
+    :std::runtime_error("cpp-restify error")
     {
-        _details["statusCode"] = (int)code;
+        Response r;
+        r.code(int(code));
+        _details = r.toJson();
     }
+
+    Error::Error(const Response & response) 
+        :std::runtime_error("cpp-restify error"), _details(response.toJson())
+    {}
     
     Error::Error(StatusCode code, const char *message)
-    :std::runtime_error(message), _details(Json::objectValue)
+    :std::runtime_error(message)
     {
-        _details["statusCode"] = (int)code;
-        _details["message"] = message;
+        Json::Value body;
+        body["statusCode"] = int(code);
+        body["message"] = message;
+
+        Response r;
+        r.code(int(code)).body(body);
+        _details = r.toJson();
     }
     
     Error::Error(StatusCode code, const char *message, int line, const char *file)
-    : Error(code, message)
+    : std::runtime_error(message)
     {
-        _details["lineNumber"] = line;
-        _details["fileName"] = file;
+        Json::Value body;
+        body["statusCode"] = int(code);
+        body["message"] = message;
+        body["lineNumber"] = line;
+        body["fileName"] = file;
+
+        Response r;
+        r.code(int(code)).body(body);
+
+        _details = r.toJson();
     }
+
+    Error::Error(const Error & other)
+        :runtime_error(other.what())
+    {
+        _details = other._details;
+    }
+
+    Error::~Error() {}
 
     const Json::Value & Error::toJson() const {
         return _details;

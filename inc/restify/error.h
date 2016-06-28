@@ -12,6 +12,7 @@
 #define CPP_RESTIFY_ERROR_H
 
 #include <restify/interface.h>
+#include <restify/forward.h>
 #include <json/json.h>
 #include <restify/codes.h>
 #include <stdexcept>
@@ -28,8 +29,11 @@ namespace restify {
     public:
 
         Error(StatusCode code);
+        Error(const Response &response);
         Error(StatusCode code, const char *message);
         Error(StatusCode code, const char *message, int line, const char *file);
+        Error(const Error &other);
+        ~Error();
 
         const Json::Value &toJson() const;
 
@@ -43,7 +47,7 @@ namespace restify {
 
     
 #define CPPRESTIFY_FAIL(code, message) \
-    throw Error(code, message, __LINE__, __FILE__);
+    throw ::restify::Error(code, message, __LINE__, __FILE__);
  
 }
 

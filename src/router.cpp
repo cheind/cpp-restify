@@ -101,8 +101,8 @@ namespace restify {
 
     struct Router::PrivateData {
         typedef std::vector<Route> ArrayOfRoute;
-
         ArrayOfRoute routes;
+        RequestHandlerPtr defaultRoute;
         
         PrivateData() {}
     };
@@ -146,6 +146,10 @@ namespace restify {
         return true;
     }
 
+    void Router::setDefaultRoute(const RequestHandler & handler) {
+        _data->defaultRoute = std::make_shared<RequestHandler>(handler);
+    }
+
     bool Router::dispatch(Request & req, Response & rep) const
     {
         // Loop over routes until the first one handles the request
@@ -165,8 +169,17 @@ namespace restify {
             // Invoke handler
             return r.handle(req, rep);
         });
-        
-        return i != _data->routes.end();
+
+        if (i == _data->routes.end()) {
+            // No route matched, invoke default handle if available.
+            if (_data->defaultRoute) {
+                return (*_data->defaultRoute)(req, rep);
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
         
     }
 
