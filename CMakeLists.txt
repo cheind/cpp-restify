@@ -33,6 +33,7 @@ add_library(cpp-restify SHARED
     inc/restify/codes.h
     inc/restify/error.h
     inc/restify/http_renderer.h
+    inc/restify/handler.h
 	src/server.cpp
     src/request.cpp
     src/response.cpp
@@ -40,6 +41,7 @@ add_library(cpp-restify SHARED
     src/helpers.cpp
     src/error.cpp
     src/http_renderer.cpp
+    src/handler.cpp
 )
 
 target_link_libraries(cpp-restify mongoose jsoncpp)

@@ -67,6 +67,28 @@ TEST_CASE("helpers-json-builder") {
     REQUIRE(v["body"]["elements"][1] == "b");
     REQUIRE(v["body"]["elements"][2] == "c");
     REQUIRE(v["body"]["count"].asInt() == 3);
+}
+
+TEST_CASE("helpers-json-builder-alt") {
+
+    restify::JsonBuilder jbp;
+
+    Json::Value v = restify::json()
+        ("body.message", "Hello World")
+        ("body.count", 3)
+        ("body.elements.[0]", "a")
+        ("body.elements.[1]", "b")
+        ("body.elements.[2]", "c");
+
+
+    REQUIRE(v["body"].isObject());
+    REQUIRE(v["body"]["message"].asString() == "Hello World");
+    REQUIRE(v["body"]["elements"].isArray());
+    REQUIRE(v["body"]["elements"].size() == 3);
+    REQUIRE(v["body"]["elements"][0] == "a");
+    REQUIRE(v["body"]["elements"][1] == "b");
+    REQUIRE(v["body"]["elements"][2] == "c");
+    REQUIRE(v["body"]["count"].asInt() == 3);
 
 }
 
@@ -74,6 +96,7 @@ TEST_CASE("helpers-json-builder") {
 #include <restify/request.h>
 #include <restify/response.h>
 #include <restify/error.h>
+#include <restify/handler.h>
 
 TEST_CASE("server") {
     
@@ -93,6 +116,8 @@ TEST_CASE("server") {
 
         return true;
     });
+
+    server.otherwise(restify::RedirectRequestHandler(restify::json()("url", "/users/232")));
     
     server.start();
     

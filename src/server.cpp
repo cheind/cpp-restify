@@ -63,6 +63,11 @@ namespace restify {
         return *this;
     }
 
+    Server & Server::otherwise(const RequestHandler & handler) {
+        _data->router.setDefaultRoute(handler);
+        return *this;
+    }
+
     void Server::start()
     {
         const char *opts[] = { "listening_ports", "8080", NULL };

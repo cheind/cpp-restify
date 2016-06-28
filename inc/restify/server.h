@@ -30,6 +30,7 @@ namespace restify {
         ~Server();
 
         Server &route(const Json::Value &opts, const RequestHandler &handler);
+        Server &otherwise(const RequestHandler &handler);
 
         void start();
         void stop();

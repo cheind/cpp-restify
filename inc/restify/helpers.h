@@ -168,11 +168,19 @@ namespace restify {
         JsonBuilder();
 
         JsonBuilder &set(const std::string &path, const Json::Value &value);
+        JsonBuilder operator()(const std::string &path, const Json::Value &value);
+        operator const Json::Value&() const;
 
         const Json::Value &toJson() const;
     private:
         CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);
     };
+
+
+    /** Return a new Json builder. */
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json();
+
 }
 
 
