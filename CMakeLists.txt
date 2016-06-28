@@ -48,14 +48,25 @@ target_link_libraries(cpp-restify mongoose jsoncpp)
 
 # Tests
 
-add_executable(cpp-restify-tests
+set(TEST_SOURCES
     tests/catch.hpp
     tests/test_request.cpp
     tests/test_response.cpp
     tests/test_router.cpp
     tests/test_helpers.cpp
 )
-target_link_libraries(cpp-restify-tests cpp-restify jsoncpp)
+
+set(TEST_LINK_TARGETS cpp-restify jsoncpp)
+
+find_package(CURL QUIET)
+if(CURL_FOUND)
+    list(APPEND TEST_SOURCES tests/test_server.cpp)
+    list(APPEND TEST_LINK_TARGETS ${CURL_LIBRARIES})
+    include_directories(${CURL_INCLUDE_DIRS})
+endif()
+
+add_executable(cpp-restify-tests ${TEST_SOURCES})
+target_link_libraries(cpp-restify-tests ${TEST_LINK_TARGETS})
 
 
 

@@ -121,7 +121,7 @@ TEST_CASE("helpers-json-builder-adapt") {
 #include <restify/error.h>
 #include <restify/handler.h>
 
-/*
+
 TEST_CASE("server") {
     
     Json::Value v(Json::nullValue);
@@ -151,5 +151,3 @@ TEST_CASE("server") {
     
     
 }
-
-*/
