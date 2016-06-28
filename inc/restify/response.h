@@ -13,13 +13,11 @@
 
 #include <restify/interface.h>
 #include <restify/codes.h>
-#include <restify/non_copyable.h>
-#include <json/json-forwards.h>
-#include <memory>
+#include <json/json.h>
 
 namespace restify {
 
-    class CPPRESTIFY_INTERFACE Response : NonCopyable 
+    class CPPRESTIFY_INTERFACE Response 
     {
     public:
 
@@ -35,8 +33,7 @@ namespace restify {
         
 
     private:
-        struct PrivateData;
-        CPPRESTIFY_NO_INTERFACE_WARN(std::unique_ptr<PrivateData>, _data);
+        CPPRESTIFY_NO_INTERFACE_WARN(Json::Value, _root);
     };
 
 }
