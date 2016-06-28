@@ -148,24 +148,35 @@ namespace restify {
 
     void Server::readRequestHeaders(const mg_request_info * info, Request & request) const {
         Json::Value &root = request.toJson();
-        Json::Value &getHeaders = root[Request::Keys::params];
+        Json::Value &headers = root[Request::Keys::headers];
         for (int i = 0; i < info->num_headers; ++i) {
-            getHeaders[info->http_headers[i].name] = info->http_headers[i].value;
+            headers[info->http_headers[i].name] = info->http_headers[i].value;
         }
     }
     void Server::readRequestBody(mg_connection * conn, Request & request) const {
+
+        Json::Value &root = request.toJson();
+
+        // See if Content-Length is provided.
+        if (json_cast<int>(request.getHeader("Content-Length", 0)) <= 0) {
+            root[Request::Keys::body] = "";
+            return;
+        }
+
         std::ostringstream oss;
         std::vector<char> partialBodyData(1024);
         int read = 0;
-        while ((read = mg_read(conn, &partialBodyData.at(0), 1024)) > 0) {
-            oss << std::string(partialBodyData.begin(), partialBodyData.begin() + read);
-        }
+        do {
+            read = mg_read(conn, &partialBodyData.at(0), 1024);
+            if (read > 0) {
+                oss << std::string(partialBodyData.begin(), partialBodyData.begin() + read);
+            }
+        } while (read > 0);
 
         if (read < 0) {
             throw Error(StatusCode::BadRequest, "Message transfer not complete.");
         }
 
-        Json::Value &root = request.toJson();
         root[Request::Keys::body] = oss.str();
     }
 
