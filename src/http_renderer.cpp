@@ -35,7 +35,7 @@ namespace restify {
 
         Json::Value headers(Json::objectValue);
 
-        const std::string setBody = renderBody(jroot, headers);
+        const std::string body = renderBody(jroot, headers);
 
         // Replace generated headers by headers set in response.
         jsonMerge(headers, jroot["headers"]);
@@ -53,7 +53,7 @@ namespace restify {
         http << EOL;
 
         // Body
-        http << setBody;
+        http << body;
 
         return http.str();
     }
@@ -61,28 +61,28 @@ namespace restify {
     std::string HttpRenderer::renderBody(const Json::Value &jroot, Json::Value & generatedHeaders)  const {
         const Json::Value jbody = jroot.get("body", "");
         
-        std::string setBody;
+        std::string body;
 
         switch (jbody.type()) {
         case Json::stringValue:
-            setBody = jbody.asString();
+            body = jbody.asString();
             generatedHeaders["Content-Type"] = "text/plain; charset=utf-8";
-            generatedHeaders["Content-Length"] = (int)setBody.length();
+            generatedHeaders["Content-Length"] = (int)body.length();
             break;
         case Json::objectValue:
         {
             Json::FastWriter w;
             w.omitEndingLineFeed();
-            setBody = w.write(jbody);
+            body = w.write(jbody);
             generatedHeaders["Content-Type"] = "application/json; charset=utf-8";
-            generatedHeaders["Content-Length"] = (int)setBody.length();
+            generatedHeaders["Content-Length"] = (int)body.length();
             break;
         }
         default:
             CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to render body.");
         }
 
-        return setBody;
+        return body;
         
     }
 
