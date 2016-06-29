@@ -23,8 +23,7 @@ namespace restify {
         size_t size;
     };
 
-    static size_t
-        writeCallbackCURL(void *contents, size_t size, size_t nmemb, void *userp) {
+    static size_t writeCallbackCURL(void *contents, size_t size, size_t nmemb, void *userp) {
         size_t realsize = size * nmemb;
         struct InMemoryStruct *mem = (struct InMemoryStruct *)userp;
 
@@ -38,6 +37,20 @@ namespace restify {
         memcpy(&(mem->memory[mem->size]), contents, realsize);
         mem->size += realsize;
         mem->memory[mem->size] = 0;
+
+        return realsize;
+    }
+
+    static size_t headerCallbackCURL(void *contents, size_t size, size_t nitems, void *userp) {
+        size_t realsize = size * nitems;
+
+        const char *buffer = (const char*)contents;
+        std::vector<std::string> parts = restify::splitString(std::string(buffer, buffer + realsize), ':', true, true);
+
+        if (parts.size() == 2 && parts.front().size() > 0 && parts.back().size() > 0) {
+            Json::Value &headers = *(static_cast<Json::Value*>(userp));
+            headers[parts.front()] = parts.back();
+        }
 
         return realsize;
     }
@@ -76,6 +89,9 @@ namespace restify {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (int)body.size());
 
+        const bool followRedirects = restify::json_cast<bool>(req.get("followRedirects", false));
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, followRedirects ? 1L : 0L);
+
         // Set headers
         bool hasContentTypeHeaderExplicit = false;
         for (auto h : req["headers"].getMemberNames()) {
@@ -96,14 +112,19 @@ namespace restify {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallbackCURL);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&responseBody);
 
+        // Setup header fetcher
+        Json::Value responseHeaders(Json::objectValue);
+        curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallbackCURL);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&responseHeaders);
+
         CURLcode res = curl_easy_perform(curl);
         response["error"] = (res == CURLE_OK) ? false : true;
         response["success"] = (res == CURLE_OK) ? true : false;
+        response["headers"] = responseHeaders;
 
         if (res == CURLE_OK) {
             response["statusCode"] = getCurlInfo<int>(curl, CURLINFO_RESPONSE_CODE);
             std::string contentType = getCurlInfo<std::string>(curl, CURLINFO_CONTENT_TYPE);
-            response["headers"]["Content-Type"] = contentType;
 
             const static std::regex isJson(R"(/json)", std::regex::icase);
             std::string responseBodyStr = std::string(responseBody.memory, responseBody.memory + responseBody.size);
