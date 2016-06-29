@@ -19,26 +19,8 @@
 #include "mongoose.h"
 
 namespace restify {
-    
 
-    void MongooseHttpRequestReader::readRequestHeader(Connection &c, Request & request) const {
-
-        try {
-            MongooseConnection &mc = dynamic_cast<MongooseConnection&>(c);
-
-            const mg_request_info * info = mc.getMongooseRequestInfo();
-
-            readMethod(info, request);
-            readPath(info, request);
-            readHeaders(info, request);
-            readQueryString(info, request);
-
-        } catch (std::bad_cast) {
-            CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Expected MongooseConnection.");
-        }
-    }
-
-    void MongooseHttpRequestReader::readRequestBody(Connection & c, Request & request) const {
+    void RawHttpRequestReader::readRequestBody(Connection & c, Request & request) const {
         Json::Value &root = request.toJson();
 
         // See if Content-Length is provided.
@@ -71,6 +53,23 @@ namespace restify {
 
         } else {
             root[Request::Keys::body] = oss.str();
+        }
+    }
+    
+    void MongooseHttpRequestReader::readRequestHeader(Connection &c, Request & request) const {
+        
+        try {
+            MongooseConnection &mc = dynamic_cast<MongooseConnection&>(c);
+            
+            const mg_request_info * info = mc.getMongooseRequestInfo();
+            
+            readMethod(info, request);
+            readPath(info, request);
+            readHeaders(info, request);
+            readQueryString(info, request);
+            
+        } catch (std::bad_cast) {
+            CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Expected MongooseConnection.");
         }
     }
 
