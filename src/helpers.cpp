@@ -43,8 +43,18 @@ namespace restify {
         
         return str.substr(strBegin, strRange);
     }
+
+    std::string removeLineBreaksInString(const std::string & str, const std::string & lb) {
+        std::string result = str;
+        std::string::size_type pos = 0;
+        while ((pos = result.find(lb, pos)) != std::string::npos) {
+            result.erase(pos, 2);
+        }
+        result.shrink_to_fit();
+        return result;
+    }
     
-    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim) {
+    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim, bool removeLineBreaks) {
         
         std::istringstream split(str);
         
@@ -54,6 +64,8 @@ namespace restify {
             
             if (trim)
                 elem = trimString(elem);
+            if (removeLineBreaks)
+                elem = removeLineBreaksInString(elem);
             
             tokens.push_back(elem);
         }

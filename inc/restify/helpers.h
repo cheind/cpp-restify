@@ -26,9 +26,12 @@ namespace restify {
     
     CPPRESTIFY_INTERFACE
     std::string trimString(const std::string &str, const std::string &ws = " \t");
+
+    CPPRESTIFY_INTERFACE
+    std::string removeLineBreaksInString(const std::string &str, const std::string &lb = "\r\n");
     
     CPPRESTIFY_INTERFACE
-    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim);
+    std::vector<std::string> splitString(const std::string &str, const char delim, bool trim, bool removeLineBreaks);
     
     // Explicit Json conversion
 

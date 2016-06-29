@@ -51,9 +51,12 @@ TEST_CASE("helpers-json-cast")
 TEST_CASE("helpers-split-string") {
     
     
-    REQUIRE(restify::splitString(" a=2& b = 3.1&c = 1;2;3 ", '&', true) ==
+    REQUIRE(restify::splitString(" a=2& b = 3.1&c = 1;2;3 ", '&', true, false) ==
             (std::vector<std::string> {"a=2", "b = 3.1", "c = 1;2;3"}));
     
+
+    REQUIRE(restify::splitString(" a=2& b = 3.1&c = 1;2;3\r\n ", '&', true, true) ==
+        (std::vector<std::string> {"a=2", "b = 3.1", "c = 1;2;3"}));
     
 }
 
