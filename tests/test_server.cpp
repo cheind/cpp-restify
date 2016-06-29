@@ -10,9 +10,9 @@ of MIT license. See the LICENSE file for details.
 
 #include "catch.hpp"
 #include "server_fixture.h"
-#include "curl_client.h"
 
 #include <restify/server.h>
+#include <restify/client.h>
 #include <restify/request.h>
 #include <restify/response.h>
 #include <restify/helpers.h>
@@ -42,7 +42,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listens")
     });
     _server.start();
     
-    Json::Value response = sendToServer(
+    Json::Value response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080"));
 
@@ -51,7 +51,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listens")
     REQUIRE(response["body"] == "hello world");
     REQUIRE(response["headers"]["Content-Type"] == "text/plain; charset=utf-8");
 
-    response = sendToServer(
+    response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8081"));
 
@@ -84,7 +84,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
     _server.start();
 
     // Note, when sending json in body, Content-Type application/json is automatically set unless it's explicitly overriden using 'headers' field.
-    Json::Value response = sendToServer(
+    Json::Value response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/echo")
         ("method", "POST")
@@ -98,7 +98,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
     REQUIRE(response["headers"]["Content-Type"] == "application/json; charset=utf-8");
 
     // Explicitely set non json content type. That way body shouldn't be parsed as JSON in restify::Request.
-    response = sendToServer(
+    response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/echo")
         ("method", "POST")
@@ -146,7 +146,7 @@ TEST_CASE_METHOD(ServerFixture, "server-routes") {
 
     // Invoke server
 
-    Json::Value response = sendToServer(
+    Json::Value response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/users/1")
     );
@@ -160,7 +160,7 @@ TEST_CASE_METHOD(ServerFixture, "server-routes") {
     );
 
     // Invoke server with unknown user
-    response = sendToServer(
+    response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/users/4")
     );
@@ -176,7 +176,7 @@ TEST_CASE_METHOD(ServerFixture, "server-routes") {
 
     // Invoke server with unknown route
 
-    response = sendToServer(
+    response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/nothere")
     );
