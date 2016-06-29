@@ -12,11 +12,11 @@
 #include <restify/router.h>
 #include <restify/request.h>
 #include <restify/response.h>
-#include <restify/http_renderer.h>
 #include <restify/error.h>
 #include <restify/helpers.h>
 #include <restify/connection.h>
 #include <restify/http_request_reader.h>
+#include <restify/http_response_writer.h>
 #include <json/json.h>
 #include <regex>
 #include "mongoose.h"
@@ -29,9 +29,6 @@ namespace restify {
         struct mg_context *ctx;
         struct mg_callbacks callbacks;
         Router router;
-        HttpRenderer defaultRenderer;
-        ResponseRenderer renderResponse;
-        ErrorRenderer renderError;
         Json::Value config;
         
         PrivateData()
@@ -51,9 +48,6 @@ namespace restify {
     {
         _data->callbacks.begin_request = &Server::onBeginRequestCallback;
         _data->callbacks.log_message = onLogMessage;
-        
-        _data->renderResponse = std::bind(&HttpRenderer::renderResponse, &_data->defaultRenderer, std::placeholders::_1);
-        _data->renderError = std::bind(&HttpRenderer::renderError, &_data->defaultRenderer, std::placeholders::_1);
         
         json(_data->config)
             ("listening_ports", "127.0.0.1:8080")
@@ -143,13 +137,15 @@ namespace restify {
 
     bool Server::handleRequest(mg_connection * conn, const mg_request_info * info) {
 
+        MongooseConnection mconn(conn);
+        DefaultHttpResponseWriter writer;
+        MongooseHttpRequestReader reader;
+        
         try {
             // Setup request object
             Request request;
 
             // Read request.
-            MongooseConnection mconn(conn);
-            MongooseHttpRequestReader reader;
             reader.readRequestHeader(mconn, request);
             reader.readRequestBody(mconn, request);
 
@@ -161,25 +157,23 @@ namespace restify {
                 throw Error(StatusCode::NotFound, oss.str().c_str());                
             }
 
-            // Format response
-            const std::string responseString = _data->renderResponse(response);
-            mg_write(conn, responseString.c_str(), responseString.size());
-
+            writer.writeResponse(mconn, response);
+        
             return true;
 
         } catch (const Error &error) {
-            const std::string responseString = _data->renderError(error);
-            mg_write(conn, responseString.c_str(), responseString.size());
+            Response rep(error.toJson());
+            writer.writeResponse(mconn, rep);
             return true;
         } catch (const std::exception &error) {
             Error myError(StatusCode::InternalServerError, error.what());
-            const std::string responseString = _data->renderError(myError);
-            mg_write(conn, responseString.c_str(), responseString.size());
+            Response rep(myError.toJson());
+            writer.writeResponse(mconn, rep);
             return true;
         } catch (...) {
             Error myError(StatusCode::InternalServerError, "Unknown error occurred. That's all we know.");
-            const std::string responseString = _data->renderError(myError);
-            mg_write(conn, responseString.c_str(), responseString.size());
+            Response rep(myError.toJson());
+            writer.writeResponse(mconn, rep);
             return true;
         }
     }

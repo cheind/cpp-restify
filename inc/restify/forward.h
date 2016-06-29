@@ -22,17 +22,15 @@ namespace restify {
     class Server;
     class Router;
     class Error;
-    class HttpRenderer;
     class Client;
     class JsonBuilder;
     class Connection;
     class HttpRequestReader;
+    class HttpResponseWriter;
     class MongooseHttpRequestReader;
 
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;
-    typedef std::function<std::string (const Response &rep)> ResponseRenderer;
-    typedef std::function<std::string (const Error &err)> ErrorRenderer;
 }
 
 #endif

@@ -10,6 +10,7 @@
 
 #include <restify/connection.h>
 #include <ostream>
+#include <istream>
 #include "mongoose.h"
 
 namespace restify {
@@ -18,9 +19,6 @@ namespace restify {
     MongooseConnection::MongooseConnection(mg_connection * conn)
         :_conn(conn)
     {}
-
-    void MongooseConnection::read() {
-    }
 
     const mg_request_info * MongooseConnection::getMongooseRequestInfo() const {
         return mg_get_request_info(_conn);
@@ -46,5 +44,29 @@ namespace restify {
         } else {
             return total;
         }
+    }
+    
+    int64_t MongooseConnection::writeStream(std::istream &stream) {
+        
+        const int chunkSize = 2048;
+        char chunk[chunkSize];
+        
+        int64_t total = 0;
+        int wrote = 0;
+        
+        std::streamsize read;
+        while(stream.read(chunk, chunkSize) || (read = stream.gcount()) != 0 ) {
+            if (read > 0) {
+                wrote = mg_write(_conn, chunk, read);
+                
+                if (wrote < 0) {
+                    return -1;
+                }
+                
+                total += wrote;
+            }
+        }
+        
+        return total;
     }
 }

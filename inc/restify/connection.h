@@ -24,9 +24,8 @@ namespace restify {
 
     class CPPRESTIFY_INTERFACE Connection {
     public:
-        virtual void read() = 0;
-
         virtual int64_t readStream(std::ostream &stream) = 0;
+        virtual int64_t writeStream(std::istream &stream) = 0;
 
     };
 
@@ -34,8 +33,8 @@ namespace restify {
     public:
         MongooseConnection(struct mg_connection *conn);
 
-        virtual void read() override;
         virtual int64_t readStream(std::ostream & stream) override;
+        virtual int64_t writeStream(std::istream &stream) override;
 
     private:
         friend class MongooseHttpRequestReader;        

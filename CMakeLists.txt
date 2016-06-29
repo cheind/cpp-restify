@@ -42,9 +42,9 @@ set(LIB_SOURCES
     inc/restify/helpers.h
     inc/restify/codes.h
     inc/restify/error.h
-    inc/restify/http_renderer.h
     inc/restify/handler.h
     inc/restify/http_request_reader.h
+    inc/restify/http_response_writer.h
     inc/restify/connection.h
 	src/server.cpp
     src/request.cpp
@@ -52,9 +52,9 @@ set(LIB_SOURCES
     src/router.cpp
     src/helpers.cpp
     src/error.cpp
-    src/http_renderer.cpp
     src/handler.cpp
     src/http_request_reader.cpp
+    src/http_response_writer.cpp
     src/connection.cpp
 )
 

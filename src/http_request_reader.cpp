@@ -20,7 +20,7 @@
 
 namespace restify {
 
-    void RawHttpRequestReader::readRequestBody(Connection & c, Request & request) const {
+    void DefaultHttpRequestReader::readRequestBody(Connection & c, Request & request) const {
         Json::Value &root = request.toJson();
 
         // See if Content-Length is provided.

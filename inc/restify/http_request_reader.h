@@ -27,13 +27,13 @@ namespace restify {
         virtual void readRequestBody(Connection &c, Request &r) const = 0;
     };
     
-    class CPPRESTIFY_INTERFACE RawHttpRequestReader : public HttpRequestReader {
+    class CPPRESTIFY_INTERFACE DefaultHttpRequestReader : public HttpRequestReader {
     public:
         virtual void readRequestBody(Connection & c, Request & r) const override;
     private:
     };
 
-    class CPPRESTIFY_INTERFACE MongooseHttpRequestReader : public RawHttpRequestReader {
+    class CPPRESTIFY_INTERFACE MongooseHttpRequestReader : public DefaultHttpRequestReader {
     public:
         virtual void readRequestHeader(Connection & c, Request & r) const override;
     private:
