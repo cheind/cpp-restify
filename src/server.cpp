@@ -15,6 +15,8 @@
 #include <restify/http_renderer.h>
 #include <restify/error.h>
 #include <restify/helpers.h>
+#include <restify/connection.h>
+#include <restify/http_request_reader.h>
 #include <json/json.h>
 #include <regex>
 #include "mongoose.h"
@@ -145,10 +147,11 @@ namespace restify {
             // Setup request object
             Request request;
 
-            readRequestPath(info, request);
-            readRequestMethod(info, request);
-            readRequestHeaders(info, request);
-            readRequestBody(conn, request);
+            // Read request.
+            MongooseConnection mconn(conn);
+            MongooseHttpRequestReader reader;
+            reader.readRequestHeader(mconn, request);
+            reader.readRequestBody(mconn, request);
 
             // Route request
             Response response;
@@ -178,99 +181,6 @@ namespace restify {
             const std::string responseString = _data->renderError(myError);
             mg_write(conn, responseString.c_str(), responseString.size());
             return true;
-        }
-    }
-
-    void Server::readRequestMethod(const mg_request_info * info, Request & request) const {
-        Json::Value &root = request.toJson();
-        root[Request::Keys::method] = info->request_method;        
-    }
-
-    void Server::readRequestPath(const mg_request_info * info, Request & request) const {
-        Json::Value &root = request.toJson();
-        root[Request::Keys::path] = info->uri;
-    }
-
-    void Server::readRequestHeaders(const mg_request_info * info, Request & request) const {
-        Json::Value &root = request.toJson();
-        Json::Value &headers = root[Request::Keys::headers];
-        for (int i = 0; i < info->num_headers; ++i) {
-            headers[info->http_headers[i].name] = info->http_headers[i].value;
-        }
-    }
-
-    void Server::readRequestBody(mg_connection * conn, Request & request) const {
-
-        Json::Value &root = request.toJson();
-
-        // See if Content-Length is provided.
-        if (json_cast<int>(request.getHeader("Content-Length", 0)) <= 0) {
-            root[Request::Keys::body] = "";
-            return;
-        }
-
-        std::ostringstream oss;
-        std::vector<char> partialBodyData(1024);
-        int read = 0;
-        do {
-            read = mg_read(conn, &partialBodyData.at(0), 1024);
-            if (read > 0) {
-                oss << std::string(partialBodyData.begin(), partialBodyData.begin() + read);
-            }
-        } while (read > 0);
-
-        if (read < 0) {
-            throw Error(StatusCode::BadRequest, "Message transfer not complete.");
-        }
-
-        const static std::regex isContentJsonRegex(R"(/json)", std::regex::icase);
-
-        std::string contentType = json_cast<std::string>(request.getHeader("Content-Type", ""));
-        
-        if (std::regex_search(contentType.begin(), contentType.end(), isContentJsonRegex)) {
-
-            std::istringstream iss(oss.str());
-
-            Json::CharReaderBuilder b;
-            std::string errs;
-            
-            root[Request::Keys::body] = Json::Value(Json::objectValue);
-            
-            if (!Json::parseFromStream(b, iss, &root[Request::Keys::body], &errs)) {
-                throw Error(StatusCode::BadRequest, errs.c_str());
-            }
-
-        } else {
-            root[Request::Keys::body] = oss.str();
-        }
-    }
-
-    void Server::readQueryString(const mg_request_info * info, Request & request) const {
-        Json::Value &root = request.toJson();
-        
-        if (info->query_string) {
-
-            // Decode query string.
-            const int bufferSize = 2048;
-            char buffer[bufferSize];
-            mg_url_decode(info->query_string, (int)strlen(info->query_string), buffer, bufferSize, 0);
-            const std::string decodedQueryString(buffer);
-
-            // Update request params.
-            Json::Value &getParams = root[Request::Keys::params];
-            std::vector<std::string> pairs = splitString(decodedQueryString, '&', false, false);
-            for (auto p : pairs) {
-                std::vector<std::string> keyval = splitString(p, '=', true, false);
-
-                if (keyval.size() != 2 || keyval.front().empty() || keyval.back().empty()) {
-                    CPPRESTIFY_FAIL(StatusCode::BadRequest, "Query string is malformed.");
-                }
-
-                getParams[keyval[0]] = keyval[1];
-            }
-
-            // Set query string
-            root[Request::Keys::query] = decodedQueryString;
         }
     }
 
