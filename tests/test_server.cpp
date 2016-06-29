@@ -17,6 +17,7 @@ of MIT license. See the LICENSE file for details.
 #include <restify/response.h>
 #include <restify/helpers.h>
 #include <restify/error.h>
+#include <restify/handler.h>
 #include <json/json.h>
 
 #include <future>
@@ -113,7 +114,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
 }
 
 
-TEST_CASE_METHOD(ServerFixture, "server-routes") {
+TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
 
     const char *names[] = { "Foo", "Bar" };
 
@@ -142,6 +143,22 @@ TEST_CASE_METHOD(ServerFixture, "server-routes") {
             return true;
         }
     );
+    _server.route(
+        restify::json()
+        ("path", "/welcome")
+        ("methods", "GET"),
+        [](const restify::Request &req, restify::Response &rep) {
+            rep.setBody("Welcome!");
+            return true;
+        }
+    );
+    _server.otherwise(
+        restify::RedirectRequestHandler(
+            restify::json()
+            ("url", "/welcome")
+        )
+    );
+
     _server.start();
 
     // Invoke server
@@ -174,18 +191,36 @@ TEST_CASE_METHOD(ServerFixture, "server-routes") {
     );
 
 
-    // Invoke server with unknown route
+    // Invoke server with welcome route
 
     response = restify::Client::invoke(
         restify::json()
-        ("url", "http://127.0.0.1:8080/nothere")
+        ("url", "http://127.0.0.1:8080/welcome")
     );
 
     REQUIRE(response["success"] == true);
-    REQUIRE(response["statusCode"] == (int)restify::StatusCode::NotFound);
-    REQUIRE(response["body"] ==
-            restify::json()
-            ("message", "Route not found /nothere")
-            ("statusCode", 404)
+    REQUIRE(response["statusCode"] == 200);
+    REQUIRE(response["body"] == "Welcome!");
+
+    // Invoke server with unknown route
+    response = restify::Client::invoke(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/nosuchroute")
     );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == 301);
+    REQUIRE(response["headers"]["Location"] == "/welcome");
+
+    // Invoke server with unknown route and follow redirect should bring us back to /welcome
+    response = restify::Client::invoke(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/nosuchroute")
+        ("followRedirects", true)
+    );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == 200);
+    REQUIRE(response["body"] == "Welcome!");
+
 }

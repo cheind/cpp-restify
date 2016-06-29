@@ -257,9 +257,9 @@ namespace restify {
 
             // Update request params.
             Json::Value &getParams = root[Request::Keys::params];
-            std::vector<std::string> pairs = splitString(decodedQueryString, '&', false);
+            std::vector<std::string> pairs = splitString(decodedQueryString, '&', false, false);
             for (auto p : pairs) {
-                std::vector<std::string> keyval = splitString(p, '=', true);
+                std::vector<std::string> keyval = splitString(p, '=', true, false);
 
                 if (keyval.size() != 2 || keyval.front().empty() || keyval.back().empty()) {
                     CPPRESTIFY_FAIL(StatusCode::BadRequest, "Query string is malformed.");
