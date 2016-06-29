@@ -191,11 +191,22 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
     );
 
 
-    // Invoke server with welcome route
+    // Invoke server with welcome route 
 
     response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080/welcome")
+    );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == 200);
+    REQUIRE(response["body"] == "Welcome!");
+
+    // Invoke server with welcome route and query string
+
+    response = restify::Client::invoke(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/welcome?a=b&c=d")
     );
 
     REQUIRE(response["success"] == true);
