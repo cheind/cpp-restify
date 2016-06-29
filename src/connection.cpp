@@ -9,6 +9,7 @@
 */
 
 #include <restify/connection.h>
+#include <ostream>
 #include "mongoose.h"
 
 namespace restify {
