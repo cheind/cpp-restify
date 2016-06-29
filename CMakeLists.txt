@@ -50,6 +50,7 @@ target_link_libraries(cpp-restify mongoose jsoncpp)
 
 set(TEST_SOURCES
     tests/catch.hpp
+    tests/server_fixture.h
     tests/test_request.cpp
     tests/test_response.cpp
     tests/test_router.cpp
@@ -60,7 +61,7 @@ set(TEST_LINK_TARGETS cpp-restify jsoncpp)
 
 find_package(CURL QUIET)
 if(CURL_FOUND)
-    list(APPEND TEST_SOURCES tests/test_server.cpp)
+    list(APPEND TEST_SOURCES tests/test_server.cpp tests/curl_client.h)
     list(APPEND TEST_LINK_TARGETS ${CURL_LIBRARIES})
     include_directories(${CURL_INCLUDE_DIRS})
 endif()
