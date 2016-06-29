@@ -60,8 +60,12 @@ namespace restify {
                 case Json::booleanValue:
                     return Json::valueToString(v.asBool());
                 case Json::arrayValue:
-                case Json::objectValue:
-                    return v.toStyledString();
+                case Json::objectValue: {
+                    Json::StyledWriter sw;
+                    return sw.write(v);                    
+                }
+
+                    
             }
         } catch (std::exception &) {}
         

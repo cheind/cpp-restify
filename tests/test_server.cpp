@@ -14,6 +14,7 @@ of MIT license. See the LICENSE file for details.
 #include <restify/request.h>
 #include <restify/response.h>
 #include <restify/helpers.h>
+#include <restify/error.h>
 #include <json/json.h>
 #include <future>
 #include <chrono>
@@ -22,19 +23,6 @@ of MIT license. See the LICENSE file for details.
 #include <curl/curl.h>
 
 class ServerFixture {
-public:
-    
-    void run() {
-        _server.start();
-    }
-    
-    void stop(){
-        _server.stop();
-    }
-    
-    ~ServerFixture() {
-        _server.stop();
-    }
 protected:
     restify::Server _server;
 };
@@ -54,19 +42,30 @@ public:
         if (_curl)
             curl_easy_cleanup(_curl);
         free(_response.memory);
+        curl_slist_free_all(_headers);
     }
     
     bool perform() {
         _response.size = 0;
+
+        if (_headers) {
+            curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
+        }
+
         CURLcode res = curl_easy_perform(_curl);
         
         return res == CURLE_OK;
     }
     
-    void resetOptions() {
+    void reset() {
+        curl_slist_free_all(_headers); _headers = 0;
         curl_easy_reset(_curl);
         curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, writeCallback);
-        curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&_response);
+        curl_easy_setopt(_curl, CURLOPT_WRITEDATA, (void *)&_response);           
+    }
+
+    void addHeader(const std::string header) {
+        _headers = curl_slist_append(_headers, header.c_str());
     }
     
     
@@ -120,6 +119,7 @@ private:
     
     CURL *_curl;
     MemoryStruct _response;
+    struct curl_slist *_headers = NULL;
 };
 
 const int defaultRespondTimeoutMS = 500;
@@ -141,7 +141,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listen-on-multiple-addresses")
         rep.setCode(200).setBody("hello world");
         return true;
     });
-    run();
+    _server.start();
     
     Client c;
     c.setOption(CURLOPT_URL, "http://127.0.0.1:8080");
@@ -152,7 +152,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listen-on-multiple-addresses")
     REQUIRE(std::string(c.getInfo<const char*>(CURLINFO_CONTENT_TYPE)) == "text/plain; charset=utf-8");
     REQUIRE(c.body() == "hello world");
     
-    c.resetOptions();
+    c.reset();
     c.setOption(CURLOPT_URL, "http://127.0.0.1:8081");
     c.setOption(CURLOPT_TIMEOUT_MS, defaultRespondTimeoutMS);
     c.setOption(CURLOPT_HTTPGET, 1);
@@ -160,4 +160,58 @@ TEST_CASE_METHOD(ServerFixture, "server-listen-on-multiple-addresses")
     REQUIRE(c.getInfo<int>(CURLINFO_RESPONSE_CODE) == 200);
     REQUIRE(std::string(c.getInfo<const char*>(CURLINFO_CONTENT_TYPE)) == "text/plain; charset=utf-8");
     REQUIRE(c.body() == "hello world");
+}
+
+TEST_CASE_METHOD(ServerFixture, "server-post-json") {
+    
+    _server.setConfig(
+        restify::json()
+        ("listening_ports", "127.0.0.1:8080")
+    );
+    _server.route(
+        restify::json()("path", "/echo")("methods", "POST"),
+        [](const restify::Request &req, restify::Response &rep) {
+      
+        const Json::Value &body = req.getBody();
+
+        if (!body.isObject()) {
+            throw restify::Error(restify::StatusCode::BadRequest, "Expected Json");
+        }
+
+        rep.setCode(200).setBody(restify::json()("echo", body));
+        
+        return true;
+    });
+    _server.start();
+
+    Client c;
+    c.setOption(CURLOPT_URL, "http://127.0.0.1:8080/echo");
+    c.setOption(CURLOPT_TIMEOUT_MS, defaultRespondTimeoutMS);
+
+    std::string json = restify::json()("input", "hello world!")("value", 3).toJson().toStyledString();
+    c.setOption(CURLOPT_POSTFIELDS, json.c_str());
+    // When application/json header is set, request body is automatically parsed as Json.
+    c.addHeader("Content-Type: application/json");       
+    
+    REQUIRE(c.perform());
+    REQUIRE(c.getInfo<int>(CURLINFO_RESPONSE_CODE) == 200);
+    REQUIRE(std::string(c.getInfo<const char*>(CURLINFO_CONTENT_TYPE)) == "application/json; charset=utf-8");
+   
+    Json::Value response;    
+    std::istringstream(c.body()) >> response;
+    REQUIRE(response.isObject());
+    REQUIRE(response == restify::json()("echo.input", "hello world!")("echo.value", 3));
+
+    c.reset();
+    c.setOption(CURLOPT_URL, "http://127.0.0.1:8080/echo");
+    c.setOption(CURLOPT_TIMEOUT_MS, defaultRespondTimeoutMS);
+    c.setOption(CURLOPT_POSTFIELDS, json.c_str());
+    // Not setting json content header
+    REQUIRE(c.perform());
+    REQUIRE(c.getInfo<int>(CURLINFO_RESPONSE_CODE) == 400);
+    REQUIRE(std::string(c.getInfo<const char*>(CURLINFO_CONTENT_TYPE)) == "application/json; charset=utf-8");
+    std::istringstream(c.body()) >> response;
+    REQUIRE(response.isObject());
+    REQUIRE(response == restify::json()("message", "Expected Json")("statusCode", 400).toJson());
+
 }

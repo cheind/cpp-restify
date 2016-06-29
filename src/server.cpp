@@ -16,6 +16,7 @@
 #include <restify/error.h>
 #include <restify/helpers.h>
 #include <json/json.h>
+#include <regex>
 #include "mongoose.h"
 
 #include <iostream>
@@ -221,7 +222,26 @@ namespace restify {
             throw Error(StatusCode::BadRequest, "Message transfer not complete.");
         }
 
-        root[Request::Keys::body] = oss.str();
+        const static std::regex isContentJsonRegex(R"(/json)", std::regex::icase);
+
+        std::string contentType = json_cast<std::string>(request.getHeader("Content-Type", ""));
+        
+        if (std::regex_search(contentType.begin(), contentType.end(), isContentJsonRegex)) {
+
+            std::istringstream iss(oss.str());
+
+            Json::CharReaderBuilder b;
+            std::string errs;
+            
+            root[Request::Keys::body] = Json::Value(Json::objectValue);
+            
+            if (!Json::parseFromStream(b, iss, &root[Request::Keys::body], &errs)) {
+                throw Error(StatusCode::BadRequest, errs.c_str());
+            }
+
+        } else {
+            root[Request::Keys::body] = oss.str();
+        }
     }
 
     void Server::readQueryString(const mg_request_info * info, Request & request) const {

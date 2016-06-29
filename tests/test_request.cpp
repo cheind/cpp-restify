@@ -40,6 +40,31 @@ TEST_CASE("request")
     REQUIRE(r.getHeader("NOT-HERE", "ABC").asString() == "ABC");
 }
 
+TEST_CASE("request-body") {
+    using restify::Request;
+
+    restify::Request r;
+    restify::json(r)
+        (Request::Keys::method, "POST")
+        (Request::Keys::path, "/users/123")
+        (Request::Keys::params, "a", 3)
+        (Request::Keys::params, "b", true)
+        (Request::Keys::headers, "Content-Type", "text/plain")
+        (Request::Keys::headers, "Content-Length", 20)
+        (Request::Keys::body, restify::json()("value", "hello world!"));
+
+    REQUIRE(r.getMethod() == "POST");
+    REQUIRE(r.getPath() == "/users/123");
+    REQUIRE(r.getParams()["a"].asInt() == 3);
+    REQUIRE(r.getParams()["b"].asBool());
+    REQUIRE(r.getParam("a").asInt() == 3);
+    REQUIRE(r.getParam("b").asBool());
+    REQUIRE(r.getHeaders()["Content-Type"].asString() == "text/plain");
+    REQUIRE(r.getHeader("NOT-HERE", "ABC").asString() == "ABC");
+    REQUIRE(r.getBody().isObject());
+    REQUIRE(r.getBody()["value"] == "hello world!");
+}
+
 TEST_CASE("request-query-string")
 {
     /*

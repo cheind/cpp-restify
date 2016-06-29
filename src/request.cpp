@@ -49,7 +49,7 @@ namespace restify {
     }
 
     Json::Value Request::getBody() const {
-        return _root.get(Keys::body, "").asString();
+        return _root.get(Keys::body, "");
     }
 
     const Json::Value & Request::getParams() const
