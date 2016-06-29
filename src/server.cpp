@@ -198,6 +198,7 @@ namespace restify {
             headers[info->http_headers[i].name] = info->http_headers[i].value;
         }
     }
+
     void Server::readRequestBody(mg_connection * conn, Request & request) const {
 
         Json::Value &root = request.toJson();

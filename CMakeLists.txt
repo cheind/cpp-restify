@@ -44,6 +44,8 @@ set(LIB_SOURCES
     inc/restify/error.h
     inc/restify/http_renderer.h
     inc/restify/handler.h
+    inc/restify/http_request_reader.h
+    inc/restify/connection.h
 	src/server.cpp
     src/request.cpp
     src/response.cpp
@@ -52,6 +54,8 @@ set(LIB_SOURCES
     src/error.cpp
     src/http_renderer.cpp
     src/handler.cpp
+    src/http_request_reader.cpp
+    src/connection.cpp
 )
 
 set(LIB_LINK_TARGETS mongoose jsoncpp)

@@ -24,7 +24,11 @@ namespace restify {
     class Error;
     class HttpRenderer;
     class Client;
-    template<class EnclosingType> class JsonByPath;
+    class JsonBuilder;
+    class Connection;
+    class HttpRequestReader;
+    class MongooseHttpRequestReader;
+
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;
     typedef std::function<std::string (const Response &rep)> ResponseRenderer;
