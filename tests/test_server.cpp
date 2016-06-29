@@ -111,3 +111,81 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
     REQUIRE(response["body"] == restify::json()("message", "Expected Json")("statusCode", 400));
     REQUIRE(response["headers"]["Content-Type"] == "application/json; charset=utf-8");
 }
+
+
+TEST_CASE_METHOD(ServerFixture, "server-routes") {
+
+    const char *names[] = { "Foo", "Bar" };
+
+    _server.setConfig(
+        restify::json()
+        ("listening_ports", "127.0.0.1:8080")
+    );
+    _server.route(
+        restify::json()
+        ("path", "/users/:id")
+        ("methods", "GET"),
+
+        [&names](const restify::Request &req, restify::Response &rep) {
+            int idx = restify::json_cast<int>(req.getParam("id"));
+
+            if (idx > 1) {
+                throw restify::Error(restify::StatusCode::NotFound, "No such user.");
+            }
+
+            rep.setBody(
+                restify::json()
+                ("id", idx)
+                ("name", names[idx])
+            );
+
+            return true;
+        }
+    );
+    _server.start();
+
+    // Invoke server
+
+    Json::Value response = sendToServer(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/users/1")
+    );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == 200);
+    REQUIRE(response["body"] == 
+            restify::json()
+            ("id", 1)
+            ("name", "Bar")
+    );
+
+    // Invoke server with unknown user
+    response = sendToServer(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/users/4")
+    );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == 404);
+    REQUIRE(response["body"] ==
+            restify::json()
+            ("message", "No such user.")
+            ("statusCode", 404)
+    );
+
+
+    // Invoke server with unknown route
+
+    response = sendToServer(
+        restify::json()
+        ("url", "http://127.0.0.1:8080/nothere")
+    );
+
+    REQUIRE(response["success"] == true);
+    REQUIRE(response["statusCode"] == (int)restify::StatusCode::NotFound);
+    REQUIRE(response["body"] ==
+            restify::json()
+            ("message", "Route not found /nothere")
+            ("statusCode", 404)
+    );
+}
