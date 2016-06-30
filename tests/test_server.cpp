@@ -233,5 +233,32 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
     REQUIRE(response["success"] == true);
     REQUIRE(response["statusCode"] == 200);
     REQUIRE(response["body"] == "Welcome!");
-
 }
+
+/*
+TEST_CASE_METHOD(ServerFixture, "server-chunked-put") {
+    _server.setConfig(
+                     restify::json()
+                     ("backend.listening_ports", "127.0.0.1:8080")
+                     );
+    _server.route(
+                  restify::json()
+                  ("path", "/upload")
+                  ("methods", "PUT"),
+                  
+                  [](const restify::Request &req, restify::Response &rep) {
+                      std::cout << req.toJson() << std::endl;
+                      return true;
+                  }
+    );
+    
+    _server.start();
+    
+    std::cin.get();
+    
+}
+ */
+
+
+
+
