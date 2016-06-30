@@ -5018,9 +5018,15 @@ static int getreq(struct mg_connection *conn, char *ebuf, size_t ebuf_len) {
     // Request is valid
     if ((cl = get_header(&conn->request_info, "Content-Length")) != NULL) {
       conn->content_len = strtoll(cl, NULL, 10);
+/*
+    // Change by Christoph Heindl:
+    // The following lines are commented in order to support chunked uploads.
+    // Chunked uploads don't set Content-Length but are usually PUTs or POSTs.
+    // If the following code is not commented this leads to a zero body.
     } else if (!mg_strcasecmp(conn->request_info.request_method, "POST") ||
                !mg_strcasecmp(conn->request_info.request_method, "PUT")) {
       conn->content_len = -1;
+ */
     } else {
       conn->content_len = 0;
     }
