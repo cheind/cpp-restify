@@ -66,7 +66,12 @@ namespace restify {
     std::string getCurlInfo<std::string>(CURL *curl, CURLINFO info) {
         const char *str;
         curl_easy_getinfo(curl, info, &str);
-        return std::string(str);
+
+        if (str) {
+            return std::string(str);
+        } else {
+            return std::string();
+        }
     }
 
     Json::Value Client::invoke(const Json::Value &req) {
