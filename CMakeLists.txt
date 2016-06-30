@@ -13,6 +13,7 @@ endif()
 option(CPPRESTIFY_WITH_CURL "When enabled and CURL is found, restify::Client is available." OFF)
 option(CPPRESTIFY_SHARED "When enabled build a cpp-restify as shared library." ON)
 
+set(CPPRESTIFY_WITH_MONGOOSE ON)
 
 # Vendor Libraries
 
@@ -27,7 +28,6 @@ endif()
 
 set(LIB_INCLUDE_DIRS 
 	inc
-	vendor/mongoose/
     vendor/jsoncpp/
 )
 
@@ -47,6 +47,7 @@ set(LIB_SOURCES
     inc/restify/response_writer.h
     inc/restify/connection.h
     inc/restify/route.h
+    inc/restify/backend.h
 	src/server.cpp
     src/request.cpp
     src/response.cpp
@@ -58,9 +59,10 @@ set(LIB_SOURCES
     src/response_writer.cpp
     src/connection.cpp
     src/route.cpp
+    src/backend.cpp
 )
 
-set(LIB_LINK_TARGETS mongoose jsoncpp)
+set(LIB_LINK_TARGETS jsoncpp)
 
 if(CPPRESTIFY_WITH_CURL)
     list(APPEND LIB_SOURCES 
@@ -69,6 +71,15 @@ if(CPPRESTIFY_WITH_CURL)
     )     
     list(APPEND LIB_LINK_TARGETS ${CURL_LIBRARIES})
     list(APPEND LIB_INCLUDE_DIRS ${CURL_INCLUDE_DIRS})
+endif()
+
+if(CPPRESTIFY_WITH_MONGOOSE)
+	include_directories(vendor/mongoose/)
+    list(APPEND LIB_SOURCES 
+        inc/restify/mongoose/mongoose_backend.h
+        src/mongoose/mongoose_backend.cpp
+    )
+    list(APPEND LIB_LINK_TARGETS mongoose)         
 endif()
 
 include_directories(${LIB_INCLUDE_DIRS})

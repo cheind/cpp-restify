@@ -25,15 +25,19 @@ namespace restify {
     class Client;
     class JsonBuilder;
     class Connection;
-    class RequestReader;
+    class RequestHeaderReader;
+    class RequestBodyReader;
     class ResponseWriter;
-    class MongooseHttpRequestReader;
     class Route;
     class AnyRoute;
     class ParameterRoute;
+    class BackendContext;
+    class Backend;
 
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;
+
+    typedef std::function<bool(const BackendContext &ctx, Connection &c)> BackendRequestHandler;
 }
 
 #endif

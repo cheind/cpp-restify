@@ -17,9 +17,6 @@
 #include <json/json-forwards.h>
 #include <memory>
 
-struct mg_connection;
-struct mg_request_info;
-
 namespace restify {
 
     class CPPRESTIFY_INTERFACE Server : NonCopyable 
@@ -30,20 +27,20 @@ namespace restify {
         Server(const Json::Value &options);
         ~Server();
         
-        Server &setConfig(const Json::Value &options);
-        
+        Server &setBackend(std::shared_ptr<Backend> backend);
+        Server &setConfig(const Json::Value &options);        
         Server &route(const Json::Value &opts, const RequestHandler &handler);
         Server &otherwise(const RequestHandler &handler);
 
-        void start();
-        void stop();
+        Server &start();
+        Server &stop();
 
 
     private:
-        static int onBeginRequestCallback(struct mg_connection *conn);
 
-        bool handleRequest(struct mg_connection *conn, const struct mg_request_info *info);
-        
+        bool onBackendRequest(const BackendContext &ctx, Connection &conn) const;
+
+
         struct PrivateData;
         CPPRESTIFY_NO_INTERFACE_WARN(std::unique_ptr<PrivateData>, _data);
     };

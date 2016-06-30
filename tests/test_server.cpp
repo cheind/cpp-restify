@@ -35,7 +35,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listens")
 {
     _server.setConfig(
                      restify::json()
-                     ("listening_ports", "127.0.0.1:8080, 127.0.0.1:8081")
+                     ("backend.listening_ports", "127.0.0.1:8080, 127.0.0.1:8081")
     );
     _server.otherwise([](const restify::Request &req, restify::Response &rep) {
         rep.setCode(200).setBody("hello world");
@@ -66,7 +66,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
     
     _server.setConfig(
         restify::json()
-        ("listening_ports", "127.0.0.1:8080")
+        ("backend.listening_ports", "127.0.0.1:8080")
     );
     _server.route(
         restify::json()("path", "/echo")("methods", "POST"),
@@ -120,7 +120,7 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
 
     _server.setConfig(
         restify::json()
-        ("listening_ports", "127.0.0.1:8080")
+        ("backend.listening_ports", "127.0.0.1:8080")
     );
     _server.route(
         restify::json()
