@@ -99,6 +99,7 @@ if(CPPRESTIFY_WITH_CURL)
     include_directories(${CURL_INCLUDE_DIRS})
 else()
     list(APPEND TEST_SOURCES tests/warn_no_curl.cpp)
+    message(WARNING "cpp-restify is build without CURL. Many unit tests won't be included.")
 endif()
 
 add_executable(cpp-restify-tests ${TEST_SOURCES})
