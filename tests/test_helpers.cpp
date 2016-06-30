@@ -45,6 +45,70 @@ TEST_CASE("helpers-json-cast")
     REQUIRE_THROWS_AS(json_cast<int>(strNotInt), Error);
     REQUIRE_THROWS_AS(json_cast<float>(strNotInt), Error);
     REQUIRE_THROWS_AS(json_cast<bool>(strNotInt), Error);
+}
+
+
+TEST_CASE("helpers-json-merge") {
+
+    const char *a = R"(
+    {
+        "message": "hello world",
+        "body": {
+            "width": 3,
+            "height": 5
+        },
+        "count": 3
+    })";
+
+
+    const char *b = R"(
+    {
+        "message": "hugo",
+        "body": {
+            "height": 5.3,
+            "depth": 2
+        }
+    })";
+
+
+    using restify::json;
+
+    Json::Value merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeEverything);
+    REQUIRE(merged["message"] == "hugo");
+    REQUIRE(merged["body"]["width"] == 3);
+    REQUIRE(merged["body"]["height"] == 5.3);
+    REQUIRE(merged["body"]["depth"] == 2);
+    REQUIRE(merged["count"] == 3);
+
+    merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeExistingElements);
+    REQUIRE(merged["message"] == "hugo");
+    REQUIRE(merged["body"]["width"] == 3);
+    REQUIRE(merged["body"]["height"] == 5.3);
+    REQUIRE(merged["body"]["depth"].isNull());
+    REQUIRE(merged["count"] == 3);
+
+    merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeExistingElementsWithSameType);
+    REQUIRE(merged["message"] == "hugo");
+    REQUIRE(merged["body"]["width"] == 3);
+    REQUIRE(merged["body"]["height"] == 5); // not same type
+    REQUIRE(merged["body"]["depth"].isNull());
+    REQUIRE(merged["count"] == 3);
+
+    merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeNewElements);
+    REQUIRE(merged["message"] == "hello world");
+    REQUIRE(merged["body"]["width"] == 3);
+    REQUIRE(merged["body"]["height"] == 5);
+    REQUIRE(merged["body"]["depth"] == 2);
+    REQUIRE(merged["count"] == 3);
+
+    merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeNewElements);
+    REQUIRE(merged["message"] == "hello world");
+    REQUIRE(merged["body"]["width"] == 3);
+    REQUIRE(merged["body"]["height"] == 5);
+    REQUIRE(merged["body"]["depth"] == 2);
+    REQUIRE(merged["count"] == 3);
+
+
 
 }
 
@@ -103,6 +167,32 @@ TEST_CASE("helpers-json-builder-alt") {
     REQUIRE(v["body"]["elements"][1] == "b");
     REQUIRE(v["body"]["elements"][2] == "c");
     REQUIRE(v["body"]["count"].asInt() == 3);
+}
+
+TEST_CASE("helpers-json-from-string") {
+
+    const char *jsonstr = R"(
+    {
+        "message": "hello world",
+        "count": 3
+    })";
+
+    Json::Value v =
+        restify::json(jsonstr) // Parse from stream
+        ("isParamSet", true);  // Continue modifying
+
+    REQUIRE(v["message"] == "hello world");
+    REQUIRE(v["count"] == 3);
+    REQUIRE(v["isParamSet"] == true);
+
+    // Invalid string
+    const char *notjsonstr = R"(
+    {
+        "message" "hello world"
+        "count": 3
+    })";
+
+    REQUIRE_THROWS_AS(restify::json(notjsonstr), restify::Error);
 
 }
 
@@ -128,41 +218,3 @@ TEST_CASE("helpers-json-builder-adapt") {
     REQUIRE(v["body"]["count"].asInt() == 3);
 
 }
-
-#include <restify/server.h>
-#include <restify/request.h>
-#include <restify/response.h>
-#include <restify/error.h>
-#include <restify/handler.h>
-
-/*
-TEST_CASE("server") {
-    
-    Json::Value v(Json::nullValue);
-    
-    restify::Server server(v);
-    
-    Json::Value cfg;
-    cfg["path"] = "/users/:id";
-    cfg["methods"].append("GET");
-    cfg["methods"].append("POST");
-    server.route(cfg, [](const restify::Request &req, restify::Response &rep) {
-        
-        std::cout << req.toJson().toStyledString() << std::endl;
-
-        CPPRESTIFY_FAIL(restify::StatusCode::NotFound, "Not found");
-
-        return true;
-    });
-
-    server.otherwise(restify::RedirectRequestHandler(restify::json()("url", "/users/232")));
-    
-    server.start();
-    
-    std::cin.get();
-    
-    server.stop();
-    
-    
-}
-*/

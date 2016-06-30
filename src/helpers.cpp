@@ -15,20 +15,15 @@
 
 namespace restify {
 
-    inline bool updateFieldIf(Json::Value & a, const Json::Value & b, const std::string &key, int condition, std::string *errs, const std::string &errorIf) {
-        if (condition > 0) {
+    inline void updateFieldIfNot(Json::Value & a, const Json::Value & b, const std::string &key, int condition) {
+        if (condition == 0) {
             a[key] = b[key];
-            return true;
-        } else {
-            if (errs) *errs += errorIf;
-            return false;
         }
     }
 
-    bool jsonMerge(Json::Value & a, const Json::Value & b, int flags, std::string *errs) {
+    bool jsonMerge(Json::Value & a, const Json::Value & b, int ignoreFlags) {
 
         if (!a.isObject() || !b.isObject()) {
-            if (errs) *errs += "Both types should be objects.";
             return false;
         }
             
@@ -38,20 +33,20 @@ namespace restify {
 
             if (a[key].isObject() && b[key].isObject()) {
                 // Both are objects, recurse.
-                ok &= jsonMerge(a[key], b[key], flags, errs);
+                ok &= jsonMerge(a[key], b[key], ignoreFlags);
             } else {
                 // Either of both is not object.
                 if (a[key].type() == b[key].type()) {
                     // Both have the same type
-                    ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowValueChanges, errs, "Changing values is not allowed.");                    
+                    updateFieldIfNot(a, b, key, ignoreFlags & JsonMergeFlags::IgnoreNewValues);
                 } else {
                     // Type of both is different
                     if (a[key].isNull()) {
                         // field is not present in a
-                        ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowNewFields, errs, "Adding new fields is not allowed.");                        
+                        updateFieldIfNot(a, b, key, ignoreFlags & JsonMergeFlags::IgnoreNewFields);
                     } else {
                         // field is already present in a (we also know from above that they cannot be of same type.
-                        ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowTypeChanges, errs, "Changing existing field types is not allowed.");
+                        updateFieldIfNot(a, b, key, ignoreFlags & JsonMergeFlags::IgnoreNewType);
                     }
                 }
             }
@@ -108,6 +103,16 @@ namespace restify {
         :_root(&adapt, JsonBuilder::nullDelete)
     {}
 
+    JsonBuilder::JsonBuilder(std::istream &textStream)
+        : _root(new Json::Value(), JsonBuilder::defaultDelete)
+    {
+        Json::CharReaderBuilder b;
+        std::string errs;
+
+        if (!Json::parseFromStream(b, textStream, _root.get(), &errs)) {
+            throw Error(StatusCode::InternalServerError, errs.c_str());
+        }
+    }
     
     JsonBuilder & JsonBuilder::set(const std::string & key, const Json::Value & value) {
         Json::Path(key).make(*_root) = value;
@@ -119,13 +124,24 @@ namespace restify {
         return *this;
     }
 
-    JsonBuilder JsonBuilder::operator()(const std::string & key, const Json::Value & value) {
+    JsonBuilder &JsonBuilder::operator()(const std::string & key, const Json::Value & value) {
         return set(key, value);
         return *this;
     }
 
-    JsonBuilder JsonBuilder::operator()(const std::string & key1, const std::string & key2, const Json::Value & value) {
+    JsonBuilder &JsonBuilder::operator()(const std::string & key1, const std::string & key2, const Json::Value & value) {
         return set(key1, key2, value);
+        return *this;
+    }
+
+    JsonBuilder & JsonBuilder::mergeFrom(const Json::Value & object, int mergeFlags) {
+        if (!jsonMerge(*_root, object, mergeFlags))
+            CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to merge.");
+        return *this;
+    }
+
+    JsonBuilder & JsonBuilder::mergeFrom(const Json::Value & object, int mergeFlags, const std::nothrow_t & tag) {
+        jsonMerge(*_root, object, mergeFlags);
         return *this;
     }
 
@@ -152,6 +168,15 @@ namespace restify {
 
     JsonBuilder json(Json::Value &adaptTo) {
         return JsonBuilder(adaptTo);
+    }
+
+    JsonBuilder json(const std::string & jsonStr) {
+        std::istringstream iss(jsonStr);
+        return JsonBuilder(iss);
+    }
+
+    JsonBuilder json(std::istream & is) {
+        return JsonBuilder(is);
     }
 
      JsonBuilder json(Request & request) {

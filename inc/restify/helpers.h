@@ -22,14 +22,18 @@
 namespace restify {
 
     struct JsonMergeFlags {
-        static constexpr int AllowNewFields = 1 << 1;
-        static constexpr int AllowTypeChanges = 1 << 2;
-        static constexpr int AllowValueChanges = 1 << 3;
-        static constexpr int Default = AllowNewFields | AllowTypeChanges | AllowValueChanges;
+        static constexpr int IgnoreNewFields = 1 << 1;
+        static constexpr int IgnoreNewType = 1 << 2;
+        static constexpr int IgnoreNewValues = 1 << 3;
+
+        static constexpr int MergeEverything = 0;
+        static constexpr int MergeNewElements = IgnoreNewType | IgnoreNewValues;
+        static constexpr int MergeExistingElements = IgnoreNewFields;
+        static constexpr int MergeExistingElementsWithSameType = IgnoreNewFields | IgnoreNewType;
     };
 
     CPPRESTIFY_INTERFACE
-    bool jsonMerge(Json::Value& a, const Json::Value& b, int flags = JsonMergeFlags::Default, std::string *errs = 0);
+    bool jsonMerge(Json::Value& a, const Json::Value& b, int flags = JsonMergeFlags::MergeEverything);
     
     CPPRESTIFY_INTERFACE
     std::string trimString(const std::string &str, const std::string &ws = " \t");
@@ -183,11 +187,14 @@ namespace restify {
     public:
         JsonBuilder();
         JsonBuilder(Json::Value &adapt);
+        JsonBuilder(std::istream &textStream);
 
         JsonBuilder &set(const std::string &key, const Json::Value &value);
         JsonBuilder &set(const std::string &key1, const std::string &key2, const Json::Value &value);
-        JsonBuilder operator()(const std::string &key, const Json::Value &value);
-        JsonBuilder operator()(const std::string &key1, const std::string &key2, const Json::Value &value);
+        JsonBuilder &operator()(const std::string &key, const Json::Value &value);
+        JsonBuilder &operator()(const std::string &key1, const std::string &key2, const Json::Value &value);
+        JsonBuilder &mergeFrom(const Json::Value &object, int mergeFlags);
+        JsonBuilder &mergeFrom(const Json::Value &object, int mergeFlags, const std::nothrow_t& tag);
         operator const Json::Value&() const;
 
         const Json::Value &toJson() const;
@@ -209,6 +216,14 @@ namespace restify {
     /** Return a new Json builder. */
     CPPRESTIFY_INTERFACE
     JsonBuilder json(Json::Value &adaptTo);
+
+    /** Return a new Json builder. */
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json(const std::string &jsonStr);
+
+    /** Return a new Json builder. */
+    CPPRESTIFY_INTERFACE
+    JsonBuilder json(std::istream &is);
 
     /** Return a new Json builder. */
     CPPRESTIFY_INTERFACE
