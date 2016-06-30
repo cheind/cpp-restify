@@ -5018,9 +5018,16 @@ static int getreq(struct mg_connection *conn, char *ebuf, size_t ebuf_len) {
     // Request is valid
     if ((cl = get_header(&conn->request_info, "Content-Length")) != NULL) {
       conn->content_len = strtoll(cl, NULL, 10);
+    /*
+     
+        // Change by Christoph Heindl. In order to support chunked uploads, the following
+        // lines are commented. This will force mg_read to read until socket is closed.
+        // Transfer-Encoding chunked does not set the Content-Length field.
+     
     } else if (!mg_strcasecmp(conn->request_info.request_method, "POST") ||
                !mg_strcasecmp(conn->request_info.request_method, "PUT")) {
       conn->content_len = -1;
+    */
     } else {
       conn->content_len = 0;
     }
