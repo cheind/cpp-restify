@@ -125,7 +125,10 @@ namespace restify {
         CURLcode res = curl_easy_perform(curl);
         response["error"] = (res == CURLE_OK) ? false : true;
         response["success"] = (res == CURLE_OK) ? true : false;
+        response["code"] = (int)res;
         response["headers"] = responseHeaders;
+        response["codeReason"] = curl_easy_strerror(res);
+        
 
         if (res == CURLE_OK) {
             response["statusCode"] = getCurlInfo<int>(curl, CURLINFO_RESPONSE_CODE);
@@ -142,10 +145,11 @@ namespace restify {
             }
         }
 
+        
         free(responseBody.memory);
-        curl_easy_cleanup(curl);
         curl_slist_free_all(curlheaders);
-
+        curl_easy_cleanup(curl);
+        
         return response;
     }
 
