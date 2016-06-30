@@ -77,7 +77,11 @@ if(CPPRESTIFY_WITH_MONGOOSE)
 	include_directories(vendor/mongoose/)
     list(APPEND LIB_SOURCES 
         inc/restify/mongoose/mongoose_backend.h
+        inc/restify/mongoose/mongoose_connection.h
+        inc/restify/mongoose/mongoose_request_reader.h
         src/mongoose/mongoose_backend.cpp
+        src/mongoose/mongoose_connection.cpp
+        src/mongoose/mongoose_request_reader.cpp
     )
     list(APPEND LIB_LINK_TARGETS mongoose)         
 endif()

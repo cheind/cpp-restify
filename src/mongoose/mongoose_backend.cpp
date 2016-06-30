@@ -9,6 +9,8 @@
 */
 
 #include <restify/mongoose/mongoose_backend.h>
+#include <restify/mongoose/mongoose_connection.h>
+#include <restify/mongoose/mongoose_request_reader.h>
 #include <restify/connection.h>
 #include <restify/request_reader.h>
 #include <restify/response_writer.h>

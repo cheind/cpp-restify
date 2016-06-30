@@ -36,17 +36,6 @@ namespace restify {
         virtual void readRequestBody(Connection & c, Request & r) const override;
     private:
     };
-
-    class CPPRESTIFY_INTERFACE MongooseRequestHeaderReader : public RequestHeaderReader {
-    public:
-        virtual void readRequestHeader(Connection & c, Request & r) const override;
-    private:
-
-        void readHeaders(const struct mg_request_info *info, Request &request) const;
-        void readMethod(const struct mg_request_info *info, Request &request) const;
-        void readPath(const struct mg_request_info *info, Request &request) const;
-        void readQueryString(const struct mg_request_info *info, Request &request) const;
-    };
 }
 
 #endif
