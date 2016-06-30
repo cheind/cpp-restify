@@ -15,17 +15,45 @@
 
 namespace restify {
 
-    bool jsonMerge(Json::Value & a, const Json::Value & b) {
-
-        if (!a.isObject() || !b.isObject())
+    inline bool updateFieldIf(Json::Value & a, const Json::Value & b, const std::string &key, int condition, std::string *errs, const std::string &errorIf) {
+        if (condition > 0) {
+            a[key] = b[key];
+            return true;
+        } else {
+            if (errs) *errs += errorIf;
             return false;
+        }
+    }
 
+    bool jsonMerge(Json::Value & a, const Json::Value & b, int flags, std::string *errs) {
+
+        if (!a.isObject() || !b.isObject()) {
+            if (errs) *errs += "Both types should be objects.";
+            return false;
+        }
+            
+        // For each key in b
         bool ok = true;
         for (const auto& key : b.getMemberNames()) {
-            if (a[key].isObject()) {
-                ok &= jsonMerge(a[key], b[key]);
+
+            if (a[key].isObject() && b[key].isObject()) {
+                // Both are objects, recurse.
+                ok &= jsonMerge(a[key], b[key], flags, errs);
             } else {
-                a[key] = b[key];
+                // Either of both is not object.
+                if (a[key].type() == b[key].type()) {
+                    // Both have the same type
+                    ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowValueChanges, errs, "Changing values is not allowed.");                    
+                } else {
+                    // Type of both is different
+                    if (a[key].isNull()) {
+                        // field is not present in a
+                        ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowNewFields, errs, "Adding new fields is not allowed.");                        
+                    } else {
+                        // field is already present in a (we also know from above that they cannot be of same type.
+                        ok &= updateFieldIf(a, b, key, flags & JsonMergeFlags::AllowTypeChanges, errs, "Changing existing field types is not allowed.");
+                    }
+                }
             }
         }
 

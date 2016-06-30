@@ -21,8 +21,15 @@
 
 namespace restify {
 
+    struct JsonMergeFlags {
+        static constexpr int AllowNewFields = 1 << 1;
+        static constexpr int AllowTypeChanges = 1 << 2;
+        static constexpr int AllowValueChanges = 1 << 3;
+        static constexpr int Default = AllowNewFields | AllowTypeChanges | AllowValueChanges;
+    };
+
     CPPRESTIFY_INTERFACE
-    bool jsonMerge(Json::Value& a, const Json::Value& b);
+    bool jsonMerge(Json::Value& a, const Json::Value& b, int flags = JsonMergeFlags::Default, std::string *errs = 0);
     
     CPPRESTIFY_INTERFACE
     std::string trimString(const std::string &str, const std::string &ws = " \t");
