@@ -101,13 +101,6 @@ TEST_CASE("helpers-json-merge") {
     REQUIRE(merged["body"]["depth"] == 2);
     REQUIRE(merged["count"] == 3);
 
-    merged = json(a).mergeFrom(json(b), restify::JsonMergeFlags::MergeNewElements);
-    REQUIRE(merged["message"] == "hello world");
-    REQUIRE(merged["body"]["width"] == 3);
-    REQUIRE(merged["body"]["height"] == 5);
-    REQUIRE(merged["body"]["depth"] == 2);
-    REQUIRE(merged["count"] == 3);
-
 
 
 }
