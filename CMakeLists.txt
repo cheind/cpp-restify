@@ -97,6 +97,8 @@ if(CPPRESTIFY_WITH_CURL)
     list(APPEND TEST_SOURCES tests/test_server.cpp)
     list(APPEND TEST_LINK_TARGETS ${CURL_LIBRARIES})
     include_directories(${CURL_INCLUDE_DIRS})
+else()
+    list(APPEND TEST_SOURCES tests/warn_no_curl.cpp)
 endif()
 
 add_executable(cpp-restify-tests ${TEST_SOURCES})
