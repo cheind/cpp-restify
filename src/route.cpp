@@ -53,9 +53,12 @@ namespace restify {
     ParameterRoute::ParameterRoute(const Json::Value & config, const RequestHandler & handler) 
         :RequestHandlerRoute(handler), _data(new PrivateData())
     {
-        _data->cfg = config;
+        json(_data->cfg)
+            ("ignoreTrailingSlashes", true)
+            ("methods", "GET");
+        jsonMerge(_data->cfg, config);
 
-        const std::string path = config.get("path", "").asString();
+        const std::string path = _data->cfg.get("path", "").asString();
         if (path.empty()) {
             throw Error(StatusCode::InternalServerError, "Path parameter not set.");
         }
@@ -69,13 +72,16 @@ namespace restify {
 
         // Create match regex
         std::string escaped = std::regex_replace(path, PathRegex, CapturePattern);
-        _data->matchRegex = std::regex(std::string("^") + escaped + "$");
+        bool ignoreTrailingSlashes = json_cast<bool>(_data->cfg["ignoreTrailingSlashes"]);
+        _data->matchRegex = std::regex(std::string("^") + escaped + (ignoreTrailingSlashes ? "/*" : "") + "$");
     }
 
     ParameterRoute::~ParameterRoute() {
     }
 
     bool ParameterRoute::match(const Request & request, Json::Value & extractedParams) const {
+
+        extractedParams = Json::Value(Json::objectValue);
 
         const std::string path = request.getPath();
         const std::string method = request.getMethod();

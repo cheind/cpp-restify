@@ -102,6 +102,7 @@ set(TEST_SOURCES
     tests/test_request.cpp
     tests/test_response.cpp
     tests/test_router.cpp
+    tests/test_route.cpp
     tests/test_helpers.cpp
 )
 
