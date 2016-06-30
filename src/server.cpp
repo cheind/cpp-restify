@@ -12,6 +12,7 @@
 #include <restify/router.h>
 #include <restify/request.h>
 #include <restify/response.h>
+#include <restify/route.h>
 #include <restify/error.h>
 #include <restify/helpers.h>
 #include <restify/connection.h>
@@ -76,12 +77,12 @@ namespace restify {
     }
 
     Server &Server::route(const Json::Value & opts, const RequestHandler & handler) {
-        _data->router.addRoute(opts, handler);
+        _data->router.addRoute(std::make_shared<ParameterRoute>(opts, handler));
         return *this;
     }
 
     Server & Server::otherwise(const RequestHandler & handler) {
-        _data->router.setDefaultRoute(handler);
+        _data->router.addRoute(std::make_shared<AnyRoute>(handler));
         return *this;
     }
     
@@ -151,7 +152,7 @@ namespace restify {
 
             // Route request
             Response response;
-            if (!_data->router.dispatch(request, response)) {
+            if (!_data->router.route(request, response)) {
                 std::ostringstream oss;
                 oss << "Route not found " << request.getPath();
                 throw Error(StatusCode::NotFound, oss.str().c_str());                

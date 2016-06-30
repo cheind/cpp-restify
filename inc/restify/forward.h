@@ -28,6 +28,9 @@ namespace restify {
     class HttpRequestReader;
     class HttpResponseWriter;
     class MongooseHttpRequestReader;
+    class Route;
+    class AnyRoute;
+    class ParameterRoute;
 
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;

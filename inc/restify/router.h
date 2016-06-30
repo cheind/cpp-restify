@@ -16,7 +16,6 @@
 #include <restify/forward.h>
 #include <json/json-forwards.h>
 #include <memory>
-#include <string>
 
 namespace restify {
 
@@ -28,13 +27,16 @@ namespace restify {
         ~Router();
 
         /** Add a new route. */
-        bool addRoute(const Json::Value &opts, const RequestHandler &handler);
+        void addRoute(std::shared_ptr<const Route> route);
 
-        /** Set route handler that is invoked when no other route is matched. */
-        void setDefaultRoute(const RequestHandler &handler);
-        
+        template<class RouteType, class... Args>
+        inline void createRoute(Args&&... args) {
+            std::shared_ptr<const Route> r = std::make_shared<RouteType>(std::forward<Args>(args)...);
+            addRoute(r);
+        }
+      
         /** Dispatch a request. */
-        bool dispatch(Request &req, Response &rep) const;
+        bool route(Request &req, Response &rep) const;
 
        
     private:
