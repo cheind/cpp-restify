@@ -8,8 +8,8 @@
     of MIT license. See the LICENSE file for details.
 */
 
-#ifndef CPP_RESTIFY_HTTP_RESPONSE_WRITER_H
-#define CPP_RESTIFY_HTTP_RESPONSE_WRITER_H
+#ifndef CPP_RESTIFY_RESPONSE_WRITER_H
+#define CPP_RESTIFY_RESPONSE_WRITER_H
 
 #include <restify/interface.h>
 #include <restify/forward.h>
@@ -18,12 +18,12 @@
 
 namespace restify {
 
-    class CPPRESTIFY_INTERFACE HttpResponseWriter {
+    class CPPRESTIFY_INTERFACE ResponseWriter {
     public:
         virtual void writeResponse(Connection &c, Response &r) const = 0;
     };
     
-    class CPPRESTIFY_INTERFACE DefaultHttpResponseWriter : public HttpResponseWriter {
+    class CPPRESTIFY_INTERFACE DefaultResponseWriter : public ResponseWriter {
     public:
         virtual void writeResponse(Connection &c, Response &r) const;
     private:

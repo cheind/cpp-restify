@@ -8,7 +8,7 @@
     of MIT license. See the LICENSE file for details.
 */
 
-#include <restify/http_response_writer.h>
+#include <restify/response_writer.h>
 #include <restify/connection.h>
 #include <restify/response.h>
 #include <restify/error.h>
@@ -21,7 +21,7 @@
 namespace restify {
     
     
-    void DefaultHttpResponseWriter::writeResponse(restify::Connection &c, restify::Response &r) const
+    void DefaultResponseWriter::writeResponse(restify::Connection &c, restify::Response &r) const
     {
         const std::string message = renderMessage(r.toJson());
         
@@ -32,7 +32,7 @@ namespace restify {
         }
     }
     
-    std::string DefaultHttpResponseWriter::renderMessage(const Json::Value &jroot) const
+    std::string DefaultResponseWriter::renderMessage(const Json::Value &jroot) const
     {
         std::ostringstream http;
         
@@ -61,7 +61,7 @@ namespace restify {
         return http.str();
     }
     
-    std::string DefaultHttpResponseWriter::renderBody(const Json::Value &jroot, Json::Value & generatedHeaders)  const {
+    std::string DefaultResponseWriter::renderBody(const Json::Value &jroot, Json::Value & generatedHeaders)  const {
         const Json::Value jbody = jroot.get("body", "");
         
         std::string body;
@@ -89,7 +89,7 @@ namespace restify {
         
     }
     
-    std::string DefaultHttpResponseWriter::reasonPhraseFromStatusCode(int setCode) const {
+    std::string DefaultResponseWriter::reasonPhraseFromStatusCode(int setCode) const {
         
         if (setCode >= 100 && setCode < 200)
             return "Informational";

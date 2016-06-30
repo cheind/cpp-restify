@@ -16,13 +16,12 @@
 #include <restify/error.h>
 #include <restify/helpers.h>
 #include <restify/connection.h>
-#include <restify/http_request_reader.h>
-#include <restify/http_response_writer.h>
+#include <restify/request_reader.h>
+#include <restify/response_writer.h>
 #include <json/json.h>
 #include <regex>
-#include "mongoose.h"
 
-#include <iostream>
+#include "mongoose.h"
 
 namespace restify {
 
@@ -40,7 +39,6 @@ namespace restify {
     };
 
     static int onLogMessage(const mg_connection *conn, const char *message) {
-        std::cout << message << std::endl;
         return 1;
     }
     
@@ -139,16 +137,17 @@ namespace restify {
     bool Server::handleRequest(mg_connection * conn, const mg_request_info * info) {
 
         MongooseConnection mconn(conn);
-        DefaultHttpResponseWriter writer;
-        MongooseHttpRequestReader reader;
+        DefaultResponseWriter writer;
+        MongooseRequestHeaderReader headerReader;
+        DefaultRequestBodyReader bodyReader;
         
         try {
             // Setup request object
             Request request;
 
             // Read request.
-            reader.readRequestHeader(mconn, request);
-            reader.readRequestBody(mconn, request);
+            headerReader.readRequestHeader(mconn, request);
+            bodyReader.readRequestBody(mconn, request);
 
             // Route request
             Response response;

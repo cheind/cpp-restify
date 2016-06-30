@@ -35,11 +35,9 @@ namespace restify {
 
         virtual int64_t readStream(std::ostream & stream) override;
         virtual int64_t writeStream(std::istream &stream) override;
-
-    private:
-        friend class MongooseHttpRequestReader;        
         const struct mg_request_info *getMongooseRequestInfo() const;
 
+    private:
         struct mg_connection *_conn;
     };
 }

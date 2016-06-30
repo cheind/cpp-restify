@@ -25,8 +25,8 @@ namespace restify {
     class Client;
     class JsonBuilder;
     class Connection;
-    class HttpRequestReader;
-    class HttpResponseWriter;
+    class RequestReader;
+    class ResponseWriter;
     class MongooseHttpRequestReader;
     class Route;
     class AnyRoute;

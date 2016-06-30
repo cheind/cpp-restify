@@ -8,7 +8,7 @@
     of MIT license. See the LICENSE file for details.
 */
 
-#include <restify/http_request_reader.h>
+#include <restify/request_reader.h>
 #include <restify/request.h>
 #include <restify/connection.h>
 #include <restify/error.h>
@@ -20,7 +20,7 @@
 
 namespace restify {
 
-    void DefaultHttpRequestReader::readRequestBody(Connection & c, Request & request) const {
+    void DefaultRequestBodyReader::readRequestBody(Connection & c, Request & request) const {
         Json::Value &root = request.toJson();
 
         // See if Content-Length is provided.
@@ -56,7 +56,7 @@ namespace restify {
         }
     }
     
-    void MongooseHttpRequestReader::readRequestHeader(Connection &c, Request & request) const {
+    void MongooseRequestHeaderReader::readRequestHeader(Connection &c, Request & request) const {
         
         try {
             MongooseConnection &mc = dynamic_cast<MongooseConnection&>(c);
@@ -74,17 +74,17 @@ namespace restify {
     }
 
 
-    void MongooseHttpRequestReader::readMethod(const mg_request_info * info, Request & request) const {
+    void MongooseRequestHeaderReader::readMethod(const mg_request_info * info, Request & request) const {
         Json::Value &root = request.toJson();
         root[Request::Keys::method] = info->request_method;
     }
 
-    void MongooseHttpRequestReader::readPath(const mg_request_info * info, Request & request) const {
+    void MongooseRequestHeaderReader::readPath(const mg_request_info * info, Request & request) const {
         Json::Value &root = request.toJson();
         root[Request::Keys::path] = info->uri;
     }
 
-    void MongooseHttpRequestReader::readHeaders(const mg_request_info * info, Request & request) const {
+    void MongooseRequestHeaderReader::readHeaders(const mg_request_info * info, Request & request) const {
         Json::Value &root = request.toJson();
         Json::Value &headers = root[Request::Keys::headers];
         for (int i = 0; i < info->num_headers; ++i) {
@@ -92,7 +92,7 @@ namespace restify {
         }
     }
 
-    void MongooseHttpRequestReader::readQueryString(const mg_request_info * info, Request & request) const {
+    void MongooseRequestHeaderReader::readQueryString(const mg_request_info * info, Request & request) const {
         Json::Value &root = request.toJson();
 
         if (info->query_string) {

@@ -8,8 +8,8 @@
     of MIT license. See the LICENSE file for details.
 */
 
-#ifndef CPP_RESTIFY_HTTP_REQUEST_READER_H
-#define CPP_RESTIFY_HTTP_REQUEST_READER_H
+#ifndef CPP_RESTIFY_REQUEST_READER_H
+#define CPP_RESTIFY_REQUEST_READER_H
 
 #include <restify/interface.h>
 #include <restify/forward.h>
@@ -21,19 +21,23 @@ struct mg_request_info;
 
 namespace restify {
 
-    class CPPRESTIFY_INTERFACE HttpRequestReader {
+    class CPPRESTIFY_INTERFACE RequestHeaderReader {
     public:
         virtual void readRequestHeader(Connection &c, Request &r) const = 0;
+    };
+
+    class CPPRESTIFY_INTERFACE RequestBodyReader {
+    public:
         virtual void readRequestBody(Connection &c, Request &r) const = 0;
     };
-    
-    class CPPRESTIFY_INTERFACE DefaultHttpRequestReader : public HttpRequestReader {
+
+    class CPPRESTIFY_INTERFACE DefaultRequestBodyReader : public RequestBodyReader {
     public:
         virtual void readRequestBody(Connection & c, Request & r) const override;
     private:
     };
 
-    class CPPRESTIFY_INTERFACE MongooseHttpRequestReader : public DefaultHttpRequestReader {
+    class CPPRESTIFY_INTERFACE MongooseRequestHeaderReader : public RequestHeaderReader {
     public:
         virtual void readRequestHeader(Connection & c, Request & r) const override;
     private:
