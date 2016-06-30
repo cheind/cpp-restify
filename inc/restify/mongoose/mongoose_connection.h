@@ -28,6 +28,9 @@ namespace restify {
 
         virtual int64_t readStream(std::ostream & stream) override;
         virtual int64_t writeStream(std::istream &stream) override;
+        virtual void closeConnection() override;
+        
+        
         const struct mg_request_info *getMongooseRequestInfo() const;
 
     private:

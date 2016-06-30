@@ -18,7 +18,8 @@ namespace restify {
 
     MongooseConnection::MongooseConnection(mg_connection * conn)
         :_conn(conn)
-    {}
+    {
+    }
 
     const mg_request_info * MongooseConnection::getMongooseRequestInfo() const {
         return mg_get_request_info(_conn);
@@ -68,5 +69,9 @@ namespace restify {
         }
         
         return total;
+    }
+    
+    void MongooseConnection::closeConnection() {
+        mg_close_connection(_conn);
     }
 }

@@ -23,6 +23,7 @@ namespace restify {
     public:
         virtual int64_t readStream(std::ostream &stream) = 0;
         virtual int64_t writeStream(std::istream &stream) = 0;
+        virtual void closeConnection() = 0;
     };
 }
 
