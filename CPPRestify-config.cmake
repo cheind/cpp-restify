@@ -1,3 +1,3 @@
 get_filename_component(SELF_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(${SELF_DIR}/cpp-restify-targets.cmake)
-get_filename_component(CPPRESTIFY_INCLUDE_DIRS "${SELF_DIR}/../../inc/json" ABSOLUTE)
+get_filename_component(CPPRESTIFY_INCLUDE_DIRS "${SELF_DIR}/../../inc/restify" ABSOLUTE)
