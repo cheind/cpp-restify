@@ -99,6 +99,7 @@ else()
     add_library(cpp-restify ${LIB_SOURCES} ${LIB_HEADERS})
 endif()
 target_link_libraries(cpp-restify ${LIB_LINK_TARGETS})
+set_target_properties(cpp-restify PROPERTIES DEBUG_POSTFIX "d")
 
 install(FILES ${LIB_HEADERS} DESTINATION inc/restify)
 install(TARGETS cpp-restify EXPORT cpp-restify-targets DESTINATION lib/restify)

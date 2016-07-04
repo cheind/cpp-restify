@@ -9,10 +9,9 @@ add_library(jsoncpp
 	json/json.h
 	jsoncpp.cpp
 )
+set_target_properties(jsoncpp PROPERTIES DEBUG_POSTFIX "d") 
 
  install(FILES json/json-forwards.h json/json.h DESTINATION inc/json)
  install(TARGETS jsoncpp EXPORT jsoncpp-targets DESTINATION lib/jsoncpp)
  install(EXPORT jsoncpp-targets DESTINATION lib/jsoncpp)
  install(FILES JsonCPP-config.cmake DESTINATION lib/jsoncpp)
-
-
