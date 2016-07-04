@@ -31,7 +31,7 @@ set(LIB_INCLUDE_DIRS
     vendor/jsoncpp/
 )
 
-set(LIB_SOURCES
+set(LIB_HEADERS
     inc/restify/forward.h
     inc/restify/interface.h
     inc/restify/non_copyable.h
@@ -48,6 +48,9 @@ set(LIB_SOURCES
     inc/restify/connection.h
     inc/restify/route.h
     inc/restify/backend.h
+)
+
+set(LIB_SOURCES
 	src/server.cpp
     src/request.cpp
     src/response.cpp
@@ -65,20 +68,24 @@ set(LIB_SOURCES
 set(LIB_LINK_TARGETS jsoncpp)
 
 if(CPPRESTIFY_WITH_CURL)
-    list(APPEND LIB_SOURCES 
+    list(APPEND LIB_HEADERS
         inc/restify/client.h
-        src/client.cpp
     )     
+    list(APPEND LIB_SOURCES 
+        src/client.cpp
+    )   
     list(APPEND LIB_LINK_TARGETS ${CURL_LIBRARIES})
     list(APPEND LIB_INCLUDE_DIRS ${CURL_INCLUDE_DIRS})
 endif()
 
 if(CPPRESTIFY_WITH_MONGOOSE)
 	include_directories(vendor/mongoose/)
-    list(APPEND LIB_SOURCES 
+    list(APPEND LIB_HEADERS
         inc/restify/mongoose/mongoose_backend.h
         inc/restify/mongoose/mongoose_connection.h
         inc/restify/mongoose/mongoose_request_reader.h
+    )
+    list(APPEND LIB_SOURCES 
         src/mongoose/mongoose_backend.cpp
         src/mongoose/mongoose_connection.cpp
         src/mongoose/mongoose_request_reader.cpp
@@ -88,11 +95,16 @@ endif()
 
 include_directories(${LIB_INCLUDE_DIRS})
 if(CPPRESTIFY_SHARED)
-    add_library(cpp-restify SHARED ${LIB_SOURCES})
+    add_library(cpp-restify SHARED ${LIB_SOURCES} ${LIB_HEADERS})
 else()
-    add_library(cpp-restify ${LIB_SOURCES})
+    add_library(cpp-restify ${LIB_SOURCES} ${LIB_HEADERS})
 endif()
 target_link_libraries(cpp-restify ${LIB_LINK_TARGETS})
+
+install(FILES ${LIB_HEADERS} DESTINATION inc/restify)
+install(TARGETS cpp-restify EXPORT cpp-restify-targets DESTINATION lib/restify)
+install(EXPORT cpp-restify-targets DESTINATION lib/restify)
+install(FILES CPPRestify-config.cmake DESTINATION lib/restify)
 
 # Tests
 

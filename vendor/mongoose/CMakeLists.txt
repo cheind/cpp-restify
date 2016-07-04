@@ -9,4 +9,7 @@ add_library(mongoose
 	mongoose.c
 )
 
+ install(FILES mongoose.h DESTINATION inc/mongoose)
+ install(TARGETS mongoose EXPORT mongoose-targets DESTINATION lib/mongoose)
+ install(EXPORT mongoose-targets DESTINATION lib/mongoose)
 
