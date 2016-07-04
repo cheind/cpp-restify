@@ -17,7 +17,6 @@ set(CPPRESTIFY_WITH_MONGOOSE ON)
 
 # Vendor Libraries
 
-add_subdirectory(vendor/mongoose)
 add_subdirectory(vendor/jsoncpp)
 
 if (CPPRESTIFY_WITH_CURL)
@@ -26,7 +25,7 @@ endif()
 
 # Library
 
-set(LIB_INCLUDE_DIRS 
+set(LIB_INCLUDE_DIRS
 	inc
     vendor/jsoncpp/
 )
@@ -37,7 +36,7 @@ set(LIB_HEADERS
     inc/restify/non_copyable.h
     inc/restify/request.h
     inc/restify/response.h
-	inc/restify/server.h
+		inc/restify/server.h
     inc/restify/router.h
     inc/restify/helpers.h
     inc/restify/codes.h
@@ -70,10 +69,10 @@ set(LIB_LINK_TARGETS jsoncpp)
 if(CPPRESTIFY_WITH_CURL)
     list(APPEND LIB_HEADERS
         inc/restify/client.h
-    )     
-    list(APPEND LIB_SOURCES 
+    )
+    list(APPEND LIB_SOURCES
         src/client.cpp
-    )   
+    )
     list(APPEND LIB_LINK_TARGETS ${CURL_LIBRARIES})
     list(APPEND LIB_INCLUDE_DIRS ${CURL_INCLUDE_DIRS})
 endif()
@@ -85,12 +84,12 @@ if(CPPRESTIFY_WITH_MONGOOSE)
         inc/restify/mongoose/mongoose_connection.h
         inc/restify/mongoose/mongoose_request_reader.h
     )
-    list(APPEND LIB_SOURCES 
+    list(APPEND LIB_SOURCES
         src/mongoose/mongoose_backend.cpp
         src/mongoose/mongoose_connection.cpp
         src/mongoose/mongoose_request_reader.cpp
+				vendor/mongoose/mongoose.c
     )
-    list(APPEND LIB_LINK_TARGETS mongoose)         
 endif()
 
 include_directories(${LIB_INCLUDE_DIRS})
@@ -118,8 +117,8 @@ set(TEST_SOURCES
     tests/test_helpers.cpp
 )
 
-set(TEST_LINK_TARGETS 
-    cpp-restify 
+set(TEST_LINK_TARGETS
+    cpp-restify
     jsoncpp
 )
 
