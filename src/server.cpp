@@ -20,6 +20,7 @@
 #include <restify/request_reader.h>
 #include <restify/response_writer.h>
 #include <json/json.h>
+#include <iostream>
 
 #include <restify/mongoose/mongoose_backend.h>
 
@@ -118,7 +119,9 @@ namespace restify {
                 oss << "Route not found " << request.getPath();
                 throw Error(StatusCode::NotFound, oss.str().c_str());
             }
-            
+
+			// Enable cors for now.
+			response.setHeader("Access-Control-Allow-Origin", "*");
             writer.writeResponse(conn, response);
 
             return true;
