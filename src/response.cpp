@@ -42,6 +42,11 @@ namespace restify {
         _root[Keys::body] = value;
         return *this;
     }
+
+    Response & Response::setBody(const std::string & value) {
+        _root[Keys::body] = value;
+        return *this;
+    }
     
     Response &Response::setHeader(const std::string &key, const Json::Value &value) {
         _root[Keys::headers][key] = value;
@@ -56,6 +61,11 @@ namespace restify {
     Response & Response::setRedirectTo(const std::string & location, int code) {
         setCode(code);
         setHeader("Location", location);
+        return *this;
+    }
+
+    Response & Response::setFile(const std::string & path) {
+        // TODO: insert return statement here
         return *this;
     }
 
