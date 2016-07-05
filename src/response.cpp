@@ -42,11 +42,6 @@ namespace restify {
         _root[Keys::body] = value;
         return *this;
     }
-
-    Response & Response::setBody(const std::string & value) {
-        _root[Keys::body] = value;
-        return *this;
-    }
     
     Response &Response::setHeader(const std::string &key, const Json::Value &value) {
         _root[Keys::headers][key] = value;

@@ -8,12 +8,10 @@
     of MIT license. See the LICENSE file for details.
 */
 
-#include <restify/error.h>
-#include <restify/response.h>
+#ifndef CPP_RESTIFY_BUILD_CONFIG_H
+#define CPP_RESTIFY_BUILD_CONFIG_H
 
-#include "restify_build_config.h"
+#cmakedefine CPPRESTIFY_CXX_STANDARD_14
+#cmakedefine CPPRESTIFY_SOURCE_PATH "@CPPRESTIFY_SOURCE_PATH@"
 
-namespace restify {
-
-   
-}
+#endif

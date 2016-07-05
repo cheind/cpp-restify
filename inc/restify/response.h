@@ -46,7 +46,6 @@ namespace restify {
         
         Response &setCode(int setCode);
         Response &setBody(const Json::Value &value);
-        Response &setBody(const std::string &value);
         JsonBodyBuilder beginBody();
 
         Response &setHeader(const std::string &key, const Json::Value &value);
