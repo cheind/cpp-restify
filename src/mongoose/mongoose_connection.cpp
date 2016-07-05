@@ -55,15 +55,21 @@ namespace restify {
         int64_t total = 0;
         int wrote = 0;
         
-        std::streamsize read;
-        while(stream.read(chunk, chunkSize) || (read = stream.gcount()) != 0 ) {
-            if (read > 0) {
+        bool done = false;
+        while (!done) {
+            stream.read(chunk, chunkSize);
+            std::streamsize read = stream.gcount();
+
+            if (stream.eof() && read == 0) {
+                done = true;
+            } else if (stream.fail() || stream.bad()) {
+                return -1;
+            } else {
                 wrote = mg_write(_conn, chunk, read);
-                
                 if (wrote < 0) {
                     return -1;
                 }
-                
+
                 total += wrote;
             }
         }

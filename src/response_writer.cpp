@@ -26,8 +26,8 @@ namespace restify {
         const std::string message = renderMessage(r.toJson());
         
         std::istringstream iss(message);
-        
-        if (c.writeStream(iss) < 0) {
+
+        if (c.writeStream(iss) != message.length()) {
             throw Error(StatusCode::BadRequest, "Message transfer not complete.");
         }
     }
@@ -84,7 +84,7 @@ namespace restify {
             default:
                 CPPRESTIFY_FAIL(StatusCode::InternalServerError, "Failed to render body.");
         }
-        
+
         return body;
         
     }
