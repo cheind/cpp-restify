@@ -58,9 +58,15 @@ namespace restify {
             ("methods", "GET");
         jsonMerge(_data->cfg, config);
 
-        const std::string path = _data->cfg.get("path", "").asString();
+        const bool ignoreTrailingSlashes = json_cast<bool>(_data->cfg["ignoreTrailingSlashes"]);
+
+        std::string path = _data->cfg.get("path", "").asString();
         if (path.empty()) {
             throw Error(StatusCode::InternalServerError, "Path parameter not set.");
+        }
+
+        if (ignoreTrailingSlashes) {
+            path.erase(path.find_last_not_of('/') + 1);
         }
 
         // Find all slugs in path
@@ -72,7 +78,7 @@ namespace restify {
 
         // Create match regex
         std::string escaped = std::regex_replace(path, PathRegex, CapturePattern);
-        bool ignoreTrailingSlashes = json_cast<bool>(_data->cfg["ignoreTrailingSlashes"]);
+        
         _data->matchRegex = std::regex(std::string("^") + escaped + (ignoreTrailingSlashes ? "/*" : "") + "$");
     }
 

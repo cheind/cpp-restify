@@ -36,7 +36,7 @@ set(LIB_HEADERS
     inc/restify/non_copyable.h
     inc/restify/request.h
     inc/restify/response.h
-		inc/restify/server.h
+	inc/restify/server.h
     inc/restify/router.h
     inc/restify/helpers.h
     inc/restify/codes.h

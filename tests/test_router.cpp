@@ -198,3 +198,83 @@ TEST_CASE("router-with-default") {
     REQUIRE(invokeUsersCount == 1);
     REQUIRE(invokeDefaultCount == 4);
 }
+
+
+TEST_CASE("router-with-trailing-slashes") {
+    restify::Router router;
+    using restify::ParameterRoute;
+    using restify::AnyRoute;
+
+    
+    int invokeUsersCount = 0;
+    int invokeCardsCount = 0;
+
+    router.createRoute<ParameterRoute>(
+        restify::json()
+        ("path", "/users/")
+        ("methods", "GET"),
+        [&invokeUsersCount](const restify::Request &req, restify::Response &rep) {
+        ++invokeUsersCount;
+        return true;
+    });
+
+    router.createRoute<ParameterRoute>(
+        restify::json()
+        ("path", "/cards//")
+        ("methods", "GET"),
+        [&invokeCardsCount](const restify::Request &req, restify::Response &rep) {
+        ++invokeCardsCount;
+        return true;
+    });
+
+    restify::Response rep;
+
+    using restify::Request;
+
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users");
+        REQUIRE(router.route(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users/");
+        REQUIRE(router.route(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/users//");
+        REQUIRE(router.route(r, rep));
+    }   
+
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/cards");
+        REQUIRE(router.route(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/cards/");
+        REQUIRE(router.route(r, rep));
+    }
+    {
+        Request r;
+        restify::json(r)
+            (Request::Keys::method, "GET")
+            (Request::Keys::path, "/cards///");
+        REQUIRE(router.route(r, rep));
+    }
+
+    REQUIRE(invokeUsersCount == 3);
+    REQUIRE(invokeCardsCount == 3);
+}
