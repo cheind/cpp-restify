@@ -60,18 +60,20 @@ namespace restify {
             stream.read(chunk, chunkSize);
             std::streamsize read = stream.gcount();
 
-            if (stream.eof() && read == 0) {
-                done = true;
-            } else if (stream.fail() || stream.bad()) {
-                return -1;
-            } else {
-                wrote = mg_write(_conn, chunk, read);
-                if (wrote < 0) {
-                    return -1;
-                }
+			if (read > 0) {
+				wrote = mg_write(_conn, chunk, read);
+				if (wrote < 0) {
+					return -1;
+				}
 
-                total += wrote;
-            }
+				total += wrote;
+			}
+			else if (stream.eof() && read == 0) {
+				done = true;
+			}
+			else {
+				return -1;
+			}
         }
         
         return total;
