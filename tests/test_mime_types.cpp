@@ -22,4 +22,6 @@ TEST_CASE("mimetypes-should-be-resolvable-from-file-extension")
    REQUIRE(MimeTypes::resolveFromFileExtension(".html") == "text/html");
    REQUIRE(MimeTypes::resolveFromFileExtension(".HTML") == "text/html");
 
+   REQUIRE(MimeTypes::resolveFromFileExtension(".nosuchextension", "nota/mimetype") == "nota/mimetype");
+
 }
