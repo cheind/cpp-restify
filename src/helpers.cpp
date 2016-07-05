@@ -12,6 +12,7 @@
 #include <restify/request.h>
 #include <restify/response.h>
 #include <json/json.h>
+#include <algorithm>
 
 namespace restify {
 
@@ -93,6 +94,19 @@ namespace restify {
             tokens.push_back(elem);
         }
         return tokens;
+    }
+
+    std::string toLowerCase(const std::string & str) {
+
+        std::string result;
+        result.resize(str.size());
+
+        std::transform(str.begin(),
+                       str.end(),
+                       result.begin(),
+                       ::tolower);
+
+        return result;
     }
 
     JsonBuilder::JsonBuilder()

@@ -33,6 +33,7 @@ namespace restify {
     class ParameterRoute;
     class BackendContext;
     class Backend;
+    class MimeTypes;
 
 
     typedef std::function<bool(const Request &req, Response &rep)> RequestHandler;

@@ -47,6 +47,7 @@ set(LIB_HEADERS
     inc/restify/connection.h
     inc/restify/route.h
     inc/restify/backend.h
+    inc/restify/mime_types.h
 )
 
 set(LIB_SOURCES
@@ -62,6 +63,7 @@ set(LIB_SOURCES
     src/connection.cpp
     src/route.cpp
     src/backend.cpp
+    src/mime_types.cpp
 )
 
 set(LIB_LINK_TARGETS jsoncpp)
@@ -116,6 +118,7 @@ set(TEST_SOURCES
     tests/test_router.cpp
     tests/test_route.cpp
     tests/test_helpers.cpp
+    tests/test_mime_types.cpp
 )
 
 set(TEST_LINK_TARGETS

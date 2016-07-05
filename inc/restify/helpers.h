@@ -43,6 +43,10 @@ namespace restify {
     
     CPPRESTIFY_INTERFACE
     std::vector<std::string> splitString(const std::string &str, const char delim, bool trim, bool removeLineBreaks);
+
+    CPPRESTIFY_INTERFACE
+    std::string toLowerCase(const std::string &str);
+
     
     // Explicit Json conversion
 
