@@ -17,7 +17,7 @@ namespace restify {
     
     namespace fs = std::experimental::filesystem;
 
-    Path::Type Path::getType(const std::string &path) 
+    Path::Type Path::typeOf(const std::string &path) 
     {
         const fs::path p(path);
         if (fs::is_regular_file(p)) return Path::Type::File;
@@ -31,6 +31,16 @@ namespace restify {
        
     std::string Path::join(const std::string &a, const std::string &b) {
         return (fs::path(a) / b).string();
+    }
+
+    std::string Path::extension(const std::string &path) 
+    {
+        return fs::path(path).extension().string();
+    }
+
+    std::string Path::filename(const std::string &path) 
+    {
+        return fs::path(path).filename().string();
     }
 }
 

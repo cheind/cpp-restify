@@ -18,7 +18,7 @@ namespace restify {
 
     namespace fs = filesystem;
 
-    Path::Type Path::getType(const std::string &path) {
+    Path::Type Path::typeOf(const std::string &path) {
         const fs::path p(path);
         if (p.is_file()) return Path::Type::File;
         else if (p.is_directory()) return Path::Type::Directory;
@@ -31,6 +31,18 @@ namespace restify {
 
     std::string Path::join(const std::string &a, const std::string &b) {
         return (fs::path(a) / b).str();
+    }
+
+    std::string Path::extension(const std::string &path) {
+        // Not default std behaviour in method extension().
+        std::string ext = fs::path(path).extension();
+        if (ext.empty()) return ext;
+        else return "." + ext;
+
+    }
+
+    std::string Path::filename(const std::string &path) {
+        return fs::path(path).filename();
     }
 }
 

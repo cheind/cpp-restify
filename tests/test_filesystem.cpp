@@ -17,14 +17,15 @@ of MIT license. See the LICENSE file for details.
 TEST_CASE("filesystem")
 {
     using namespace restify;
-
-
    
-    REQUIRE(Path::getType(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/")) == Path::Type::Directory);
-    REQUIRE(Path::getType(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/restify/forward.h")) == Path::Type::File);
-    REQUIRE(Path::getType(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/restify/hopefully-not-here.h")) == Path::Type::NotFound);
+    REQUIRE(Path::typeOf(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/")) == Path::Type::Directory);
+    REQUIRE(Path::typeOf(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/restify/forward.h")) == Path::Type::File);
+    REQUIRE(Path::typeOf(Path::join(CPPRESTIFY_SOURCE_PATH, "inc/restify/hopefully-not-here.h")) == Path::Type::NotFound);
 
-    std::cout << Path::makeAbsolute("./../cpp-restify-tests.exe") << std::endl;
+    REQUIRE(Path::extension("inc/restify/forward.h") == ".h");
+    REQUIRE(Path::extension("inc/restify/forward.HSD") == ".HSD");
+    REQUIRE(Path::extension("inc/restify/forward") == "");
+    REQUIRE(Path::extension("inc/restify/forward/test.js.html") == ".html");
 
 
 }

@@ -31,24 +31,23 @@ of MIT license. See the LICENSE file for details.
     REQUIRE((future).wait_for(std::chrono::milliseconds(timeout)) == std::future_status::timeout);
 
 
-TEST_CASE_METHOD(ServerFixture, "server-listens")
-{
+TEST_CASE_METHOD(ServerFixture, "server-listens") {
     _server.setConfig(
-                     restify::json()
-                     ("backend.listening_ports", "127.0.0.1:8080, 127.0.0.1:8081")
+        restify::json()
+        ("backend.listening_ports", "127.0.0.1:8080, 127.0.0.1:8081")
     );
     _server.otherwise([](const restify::Request &req, restify::Response &rep) {
         rep.setCode(200).setBody("hello world");
         return true;
     });
     _server.start();
-    
+
     Json::Value response = restify::Client::invoke(
         restify::json()
         ("url", "http://127.0.0.1:8080"));
 
     REQUIRE(response["success"] == true);
-    REQUIRE(response["statusCode"] == 200 );
+    REQUIRE(response["statusCode"] == 200);
     REQUIRE(response["body"] == "hello world");
     REQUIRE(response["headers"]["Content-Type"] == "text/plain; charset=utf-8");
 
@@ -63,7 +62,7 @@ TEST_CASE_METHOD(ServerFixture, "server-listens")
 }
 
 TEST_CASE_METHOD(ServerFixture, "server-post-json") {
-    
+
     _server.setConfig(
         restify::json()
         ("backend.listening_ports", "127.0.0.1:8080")
@@ -71,7 +70,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
     _server.route(
         restify::json()("path", "/echo")("methods", "POST"),
         [](const restify::Request &req, restify::Response &rep) {
-      
+
         const Json::Value &body = req.getBody();
 
         if (!body.isObject()) {
@@ -79,7 +78,7 @@ TEST_CASE_METHOD(ServerFixture, "server-post-json") {
         }
 
         rep.setCode(200).setBody(restify::json()("echo", body));
-        
+
         return true;
     });
     _server.start();
@@ -128,29 +127,29 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
         ("methods", "GET"),
 
         [&names](const restify::Request &req, restify::Response &rep) {
-            int idx = restify::json_cast<int>(req.getParam("id"));
+        int idx = restify::json_cast<int>(req.getParam("id"));
 
-            if (idx > 1) {
-                throw restify::Error(restify::StatusCode::NotFound, "No such user.");
-            }
-
-            rep.setBody(
-                restify::json()
-                ("id", idx)
-                ("name", names[idx])
-            );
-
-            return true;
+        if (idx > 1) {
+            throw restify::Error(restify::StatusCode::NotFound, "No such user.");
         }
+
+        rep.setBody(
+            restify::json()
+            ("id", idx)
+            ("name", names[idx])
+        );
+
+        return true;
+    }
     );
     _server.route(
         restify::json()
         ("path", "/welcome")
         ("methods", "GET"),
         [](const restify::Request &req, restify::Response &rep) {
-            rep.setBody("Welcome!");
-            return true;
-        }
+        rep.setBody("Welcome!");
+        return true;
+    }
     );
     _server.otherwise(
         restify::RedirectRequestHandler(
@@ -170,7 +169,7 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
 
     REQUIRE(response["success"] == true);
     REQUIRE(response["statusCode"] == 200);
-    REQUIRE(response["body"] == 
+    REQUIRE(response["body"] ==
             restify::json()
             ("id", 1)
             ("name", "Bar")
@@ -236,25 +235,26 @@ TEST_CASE_METHOD(ServerFixture, "server-routes-with-otherwise") {
 }
 
 /*
-TEST_CASE_METHOD(ServerFixture, "server-chunked-put") {
+TEST_CASE_METHOD(ServerFixture, "server-serve-image") {
     _server.setConfig(
-                     restify::json()
-                     ("backend.listening_ports", "127.0.0.1:8080")
-                     );
-    _server.route(
-                  restify::json()
-                  ("path", "/upload")
-                  ("methods", "PUT"),
-                  
-                  [](const restify::Request &req, restify::Response &rep) {
-                      std::cout << req.toJson() << std::endl;
-                      return true;
-                  }
+        restify::json()
+        ("backend.listening_ports", "127.0.0.1:8080")
     );
-    
+    _server.route(
+        restify::json()
+        ("path", "/image")
+        ("methods", "GET"),
+
+        [](const restify::Request &req, restify::Response &rep) {
+        std::cout << "in here!" << std::endl;
+        rep.setFile("image.png");
+        return true;
+    }
+    );
+
     _server.start();
-    
+
     std::cin.get();
-    
+
 }
- */
+*/

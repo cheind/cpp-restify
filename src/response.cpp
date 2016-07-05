@@ -10,6 +10,10 @@
 
 #include <restify/response.h>
 #include <restify/helpers.h>
+#include <restify/error.h>
+#include <restify/filesystem/filesystem.h>
+#include <restify/mime_types.h>
+#include <fstream>
 
 namespace restify {
     
@@ -60,7 +64,31 @@ namespace restify {
     }
 
     Response & Response::setFile(const std::string & path) {
-        // TODO: insert return statement here
+        if (Path::typeOf(path) != Path::Type::File) {
+            throw Error(StatusCode::NotFound, "File not found.");
+        }
+
+        std::ifstream file(path, std::ios::binary);
+
+        if (!file.good()) {
+            throw Error(StatusCode::Forbidden, "Cannot open file.");
+        }
+
+        file.seekg(0, file.end);
+        std::streampos fsize = file.tellg();
+        file.seekg(0, file.beg);        
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        file.close();
+
+        const std::string mime = MimeTypes::resolveFromFileExtension(Path::extension(path));
+
+        setBody(buffer.str());
+        setHeader("Content-Length", (int)fsize);
+        setHeader("Content-Type", mime);
+        setHeader("Content - Disposition", "attachment; filename = " + Path::filename(path));
+
         return *this;
     }
 

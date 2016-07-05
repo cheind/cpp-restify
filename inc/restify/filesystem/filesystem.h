@@ -27,9 +27,11 @@ namespace restify {
             Directory
         };
 
-        static Type getType(const std::string &path);
+        static Type typeOf(const std::string &path);
         static std::string makeAbsolute(const std::string &path);
         static std::string join(const std::string &a, const std::string &b);
+        static std::string extension(const std::string &path);
+        static std::string filename(const std::string &path);
     };
  
 }
