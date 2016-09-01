@@ -80,6 +80,10 @@ namespace restify {
         struct curl_slist *curlheaders = nullptr;
 
         // Setup options
+
+        const bool verbose = restify::json_cast<bool>(req.get("verbose", false));
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, verbose ? 1 : 0);
+
         const std::string url = restify::json_cast<std::string>(req.get("url", "http://127.0.0.1:8080"));
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
@@ -101,8 +105,13 @@ namespace restify {
         bool hasContentTypeHeaderExplicit = false;
         for (auto h : req["headers"].getMemberNames()) {
             hasContentTypeHeaderExplicit |= (h == "Content-Type");
-            curlheaders = curl_slist_append(curlheaders, req["headers"][h].asString().c_str());
+
+            std::ostringstream oss;
+            oss << h << ": " << req["headers"][h].asString();
+
+            curlheaders = curl_slist_append(curlheaders, oss.str().c_str());
         }
+
         if (!hasContentTypeHeaderExplicit && jsonbody.isObject())
             curlheaders = curl_slist_append(curlheaders, "Content-Type: application/json; charset=utf-8");
 
